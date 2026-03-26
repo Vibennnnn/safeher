@@ -1,0 +1,11 @@
+{
+  "name": "SafeHer",
+  "short_name": "SafeHer",
+  "description": "Women's personal safety companion",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f0a1e",
+  "theme_color": "#6C3FC5",
+  "orientation": "portrait",
+  "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+}

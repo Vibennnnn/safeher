@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#6C3FC5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SafeHer">
+<meta name="description" content="Your personal safety companion — SOS alerts, check-in timer, and crisis resources.">
+<link rel="manifest" href="manifest.json">
+<title>SafeHer — Your Safety Companion</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ── Reset & Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #0f0a1e;
+  color: #e8e0ff;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* ── App Shell ────────────────────────────────────────────── */
+#app {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, #1a1035 0%, #231548 60%, #1a1035 100%);
+  border-bottom: 1px solid rgba(139,92,246,0.2);
+  padding: 16px 20px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.header-icon { font-size: 28px; line-height: 1; }
+.header-text { display: flex; flex-direction: column; }
+.header-title {
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #8B5CF6, #00BFA6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+.header-sub {
+  font-size: 11px;
+  color: rgba(232,224,255,0.5);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
+
+/* ── Alert Banner ─────────────────────────────────────────── */
+#alertBanner {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 9999;
+  padding: 14px 20px;
+  background: linear-gradient(90deg, #FF3B6B, #c0174a);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  animation: slideBannerIn 0.3s ease;
+  max-width: 430px;
+  margin: 0 auto;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 20px rgba(255,59,107,0.5);
+}
+#alertBanner.show { display: block; }
+@keyframes slideBannerIn {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── Tab Content ──────────────────────────────────────────── */
+.tab-content {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px 100px;
+  animation: fadeSlideIn 0.25s ease;
+}
+.tab-content.active { display: block; }
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Bottom Nav ───────────────────────────────────────────── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  z-index: 200;
+  background: rgba(26,16,53,0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(139,92,246,0.18);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+}
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: rgba(232,224,255,0.45);
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 12px;
+  transition: color 0.2s, transform 0.15s;
+  min-width: 60px;
+}
+.nav-btn .nav-icon { font-size: 22px; transition: transform 0.2s; }
+.nav-btn.active {
+  color: #00BFA6;
+}
+.nav-btn.active .nav-icon { transform: scale(1.18); }
+.nav-btn:active { transform: scale(0.93); }
+
+/* ── Cards ────────────────────────────────────────────────── */
+.card {
+  background: #1a1035;
+  border: 1px solid rgba(139,92,246,0.15);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(232,224,255,0.5);
+  margin-bottom: 14px;
+}
+.gradient-border-card {
+  background: #1a1035;
+  border-radius: 20px;
+  padding: 2px;
+  background: linear-gradient(135deg, #00BFA6, #6C3FC5, #8B5CF6);
+  margin-bottom: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+.gradient-border-inner {
+  background: #1a1035;
+  border-radius: 18px;
+  padding: 20px;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+  padding: 14px 24px;
+  font-size: 15px;
+  width: 100%;
+}
+.btn:active { transform: scale(0.96); }
+.btn-teal {
+  background: linear-gradient(135deg, #00BFA6, #00968a);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(0,191,166,0.35);
+}
+.btn-teal:active { box-shadow: 0 2px 8px rgba(0,191,166,0.2); }
+.btn-red {
+  background: linear-gradient(135deg, #FF3B6B, #c0174a);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(255,59,107,0.35);
+}
+.btn-red:active { box-shadow: 0 2px 8px rgba(255,59,107,0.2); }
+.btn-purple {
+  background: linear-gradient(135deg, #6C3FC5, #8B5CF6);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(108,63,197,0.35);
+}
+.btn-ghost {
+  background: rgba(139,92,246,0.12);
+  color: #8B5CF6;
+  border: 1px solid rgba(139,92,246,0.25);
+}
+
+/* ── Section Header ───────────────────────────────────────── */
+.section-header {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e8e0ff;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── Status Badge ─────────────────────────────────────────── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,191,166,0.1);
+  border: 1px solid rgba(0,191,166,0.3);
+  border-radius: 50px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #00BFA6;
+  margin-bottom: 24px;
+}
+.blink-dot {
+  width: 8px; height: 8px;
+  background: #00BFA6;
+  border-radius: 50%;
+  animation: blinkDot 1.4s ease-in-out infinite;
+}
+@keyframes blinkDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.7); }
+}
+
+/* ── SOS Button ───────────────────────────────────────────── */
+.sos-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 8px 0 28px;
+}
+.sos-ring-container {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sos-ring-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 220px; height: 220px;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+.sos-ring-bg {
+  fill: none;
+  stroke: rgba(255,59,107,0.15);
+  stroke-width: 4;
+}
+.sos-ring-fill {
+  fill: none;
+  stroke: #FF3B6B;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 628;
+  stroke-dashoffset: 628;
+  transition: stroke-dashoffset 0.05s linear;
+  filter: drop-shadow(0 0 6px #FF3B6B);
+}
+#sosBtn {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: none;
+  background: radial-gradient(circle at 38% 35%, #ff6b8a, #FF3B6B 45%, #c0174a);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 900;
+  font-size: 36px;
+  color: #fff;
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 2;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  transition: transform 0.1s, box-shadow 0.3s;
+  box-shadow:
+    0 0 0 0 rgba(255,59,107,0.5),
+    0 8px 30px rgba(255,59,107,0.4);
+  animation: sosPulse 2s ease-in-out infinite;
+}
+#sosBtn .sos-label { font-size: 36px; font-weight: 900; letter-spacing: 3px; line-height: 1; }
+#sosBtn .sos-sub   { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; opacity: 0.8; margin-top: 4px; }
+#sosBtn.holding {
+  transform: scale(0.93);
+  animation: none;
+  box-shadow: 0 4px 16px rgba(255,59,107,0.3);
+}
+@keyframes sosPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255,59,107,0.55), 0 8px 30px rgba(255,59,107,0.4); }
+  50%  { box-shadow: 0 0 0 22px rgba(255,59,107,0), 0 8px 30px rgba(255,59,107,0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(255,59,107,0),   0 8px 30px rgba(255,59,107,0.4); }
+}
+.sos-hint {
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(232,224,255,0.4);
+  text-align: center;
+}
+
+/* ── Quick Actions Grid ───────────────────────────────────── */
+.quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.quick-btn {
+  background: #231548;
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 16px;
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e8e0ff;
+  transition: transform 0.12s, background 0.15s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+.quick-btn .q-icon { font-size: 26px; }
+.quick-btn:active { transform: scale(0.96); background: #2e1a5e; }
+
+/* ── Safety Tip Card ──────────────────────────────────────── */
+.tip-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e8e0ff;
+  margin-bottom: 8px;
+}
+.tip-text {
+  font-size: 13px;
+  color: rgba(232,224,255,0.6);
+  line-height: 1.6;
+}
+
+/* ── Check-in Tab ─────────────────────────────────────────── */
+.checkin-display {
+  text-align: center;
+  padding: 24px 0 16px;
+}
+.checkin-time {
+  font-size: 64px;
+  font-weight: 700;
+  color: #00BFA6;
+  line-height: 1;
+  text-shadow: 0 0 30px rgba(0,191,166,0.5), 0 0 60px rgba(0,191,166,0.2);
+  letter-spacing: -2px;
+  font-variant-numeric: tabular-nums;
+}
+.checkin-status {
+  font-size: 13px;
+  color: rgba(232,224,255,0.5);
+  margin-top: 8px;
+  min-height: 20px;
+}
+.checkin-controls { margin-top: 20px; }
+.select-styled {
+  width: 100%;
+  background: #231548;
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 14px;
+  color: #e8e0ff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 14px 18px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  margin-bottom: 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%238B5CF6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+.select-styled:disabled { opacity: 0.5; cursor: not-allowed; }
+.how-it-works { margin-top: 0; }
+.step-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.step-num {
+  width: 26px; height: 26px;
+  min-width: 26px;
+  background: linear-gradient(135deg, #6C3FC5, #8B5CF6);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+.step-text { font-size: 13px; color: rgba(232,224,255,0.65); line-height: 1.5; padding-top: 3px; }
+
+/* ── Fake Call Tab ────────────────────────────────────────── */
+.caller-input {
+  width: 100%;
+  background: #231548;
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 14px;
+  color: #e8e0ff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 14px 18px;
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+.caller-input::placeholder { color: rgba(232,224,255,0.3); }
+.caller-input:focus { border-color: rgba(139,92,246,0.6); }
+.preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: #231548;
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 12px;
+  color: #e8e0ff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 6px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.12s, background 0.15s;
+}
+.preset-btn:active { transform: scale(0.96); background: #2e1a5e; }
+
+/* ── Incoming Call Overlay ────────────────────────────────── */
+#callOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: linear-gradient(180deg, #0d1b3e 0%, #0a1628 40%, #060e1f 100%);
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 60px 30px 50px;
+  max-width: 430px;
+  margin: 0 auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+#callOverlay.active { display: flex; }
+.call-top-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+}
+.call-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+.call-avatar-ring {
+  position: relative;
+  width: 140px; height: 140px;
+  display: flex; align-items: center; justify-content: center;
+}
+.call-avatar-ring::before, .call-avatar-ring::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(139,92,246,0.3);
+  animation: callRingPulse 2s ease-out infinite;
+}
+.call-avatar-ring::before { width: 100%; height: 100%; animation-delay: 0s; }
+.call-avatar-ring::after  { width: 120%; height: 120%; animation-delay: 0.6s; }
+@keyframes callRingPulse {
+  0%   { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(1.3); }
+}
+.call-avatar {
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6C3FC5, #00BFA6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; font-weight: 700; color: #fff;
+  position: relative; z-index: 1;
+  box-shadow: 0 8px 32px rgba(108,63,197,0.5);
+}
+.call-name {
+  font-size: 30px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+}
+.call-subtitle {
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  animation: subtitlePulse 2s ease-in-out infinite;
+}
+.call-subtitle.answered { color: #00BFA6; animation: none; }
+@keyframes subtitlePulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.9; }
+}
+.call-secondary-btns {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+}
+.call-sec-btn {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  color: rgba(255,255,255,0.7);
+  transition: transform 0.12s, background 0.15s;
+}
+.call-sec-btn .sec-icon { font-size: 20px; }
+.call-sec-btn:active { transform: scale(0.93); background: rgba(255,255,255,0.18); }
+.call-action-btns {
+  display: flex;
+  gap: 60px;
+  justify-content: center;
+  align-items: center;
+}
+.call-btn {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  transition: transform 0.12s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.call-btn:active { transform: scale(0.93); }
+.call-btn-decline { background: linear-gradient(135deg, #FF3B6B, #c0174a); }
+.call-btn-answer  { background: linear-gradient(135deg, #00BFA6, #007a68); }
+
+/* ── Contacts Tab ─────────────────────────────────────────── */
+.contact-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #231548;
+  border: 1px solid rgba(139,92,246,0.15);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.contact-avatar {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6C3FC5, #00BFA6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.contact-info { flex: 1; min-width: 0; }
+.contact-name {
+  font-size: 15px; font-weight: 600; color: #e8e0ff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.contact-phone {
+  font-size: 12px; color: rgba(232,224,255,0.5); margin-top: 2px;
+}
+.contact-delete {
+  background: rgba(255,59,107,0.12);
+  border: 1px solid rgba(255,59,107,0.25);
+  border-radius: 10px;
+  color: #FF3B6B;
+  font-size: 16px;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.12s, background 0.15s;
+  flex-shrink: 0;
+}
+.contact-delete:active { transform: scale(0.92); background: rgba(255,59,107,0.22); }
+.empty-state {
+  text-align: center;
+  padding: 32px 20px;
+  color: rgba(232,224,255,0.4);
+}
+.empty-icon { font-size: 44px; margin-bottom: 12px; }
+.empty-text { font-size: 14px; line-height: 1.6; }
+.contact-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.form-input {
+  background: #231548;
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 14px;
+  color: #e8e0ff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 14px 18px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.form-input::placeholder { color: rgba(232,224,255,0.3); }
+.form-input:focus { border-color: rgba(139,92,246,0.6); }
+
+/* ── Resources Tab ────────────────────────────────────────── */
+.resource-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(139,92,246,0.1);
+}
+.resource-item:last-child { border-bottom: none; padding-bottom: 0; }
+.resource-emoji { font-size: 24px; line-height: 1.2; flex-shrink: 0; }
+.resource-info { flex: 1; }
+.resource-title { font-size: 14px; font-weight: 600; color: #e8e0ff; }
+.resource-detail { font-size: 12px; color: rgba(232,224,255,0.5); margin-top: 2px; line-height: 1.5; }
+
+/* ── Misc ─────────────────────────────────────────────────── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Alert Banner -->
+  <div id="alertBanner"></div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-icon">🛡️</div>
+    <div class="header-text">
+      <div class="header-title">SafeHer</div>
+      <div class="header-sub">Your Safety Companion</div>
+    </div>
+  </header>
+
+  <!-- ══════════════════ HOME TAB ══════════════════ -->
+  <section id="tab-home" class="tab-content active">
+
+    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:4px;">
+      <div class="status-badge">
+        <div class="blink-dot"></div>
+        You're safe
+      </div>
+    </div>
+
+    <!-- SOS Button -->
+    <div class="sos-wrap">
+      <div class="sos-ring-container">
+        <svg class="sos-ring-svg" viewBox="0 0 220 220">
+          <circle class="sos-ring-bg"   cx="110" cy="110" r="100"/>
+          <circle class="sos-ring-fill" cx="110" cy="110" r="100" id="sosRingFill"/>
+        </svg>
+        <button id="sosBtn" aria-label="SOS — hold 2 seconds">
+          <span class="sos-label">SOS</span>
+          <span class="sos-sub">HOLD 2 SEC</span>
+        </button>
+      </div>
+      <p class="sos-hint">Hold the button for 2 seconds to send an alert</p>
+    </div>
+
+    <!-- Safety Tip -->
+    <div class="gradient-border-card">
+      <div class="gradient-border-inner">
+        <div class="tip-title">💡 Safety Tip of the Day</div>
+        <div class="tip-text" id="dailyTip">Share your live location with a trusted friend before going somewhere new. A quick text takes 10 seconds and can make all the difference.</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <div class="card-title">Quick Actions</div>
+      <div class="quick-grid">
+        <button class="quick-btn" onclick="switchTab('checkin')">
+          <span class="q-icon">⏱️</span>Check-In
+        </button>
+        <button class="quick-btn" onclick="switchTab('fakecall')">
+          <span class="q-icon">📞</span>Fake Call
+        </button>
+        <button class="quick-btn" onclick="switchTab('contacts')">
+          <span class="q-icon">👥</span>Contacts
+        </button>
+        <button class="quick-btn" onclick="switchTab('resources')">
+          <span class="q-icon">📋</span>Resources
+        </button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════ CHECK-IN TAB ══════════════════ -->
+  <section id="tab-checkin" class="tab-content">
+
+    <div class="section-header">⏱️ Check-In Timer</div>
+
+    <div class="card">
+      <div class="checkin-display">
+        <div class="checkin-time" id="checkinDisplay">00:00</div>
+        <div class="checkin-status" id="checkinStatus">Set a timer and tap Start</div>
+      </div>
+      <div class="checkin-controls">
+        <select class="select-styled" id="checkinDuration">
+          <option value="5">5 minutes</option>
+          <option value="10" selected>10 minutes</option>
+          <option value="15">15 minutes</option>
+          <option value="30">30 minutes</option>
+          <option value="60">60 minutes</option>
+          <option value="90">90 minutes</option>
+          <option value="120">120 minutes</option>
+        </select>
+        <button class="btn btn-teal" id="checkinBtn" onclick="toggleCheckin()">▶ Start Timer</button>
+      </div>
+    </div>
+
+    <div class="card how-it-works">
+      <div class="card-title">How It Works</div>
+      <ul class="step-list">
+        <li class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-text">Choose how long you expect to be in an unsafe or uncertain situation.</div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-text">Tap <strong>Start Timer</strong>. The countdown begins automatically.</div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-text">When you're safe, tap <strong>"I'm Safe — Stop"</strong> to cancel the timer.</div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-text">If time runs out without cancellation, an alert is shown on-screen immediately.</div>
+        </li>
+      </ul>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════ FAKE CALL TAB ══════════════════ -->
+  <section id="tab-fakecall" class="tab-content">
+
+    <div class="section-header">📞 Fake Call</div>
+
+    <div class="card">
+      <div class="card-title">Caller Name</div>
+      <input class="caller-input" id="callerNameInput" type="text" placeholder="e.g. Mom, Alex, Dr. Smith" maxlength="40">
+      <div class="preset-grid">
+        <button class="preset-btn" onclick="setPreset('Mom')">👩 Mom</button>
+        <button class="preset-btn" onclick="setPreset('Dad')">👨 Dad</button>
+        <button class="preset-btn" onclick="setPreset('Best Friend')">🤗 Best Friend</button>
+        <button class="preset-btn" onclick="setPreset('Work')">💼 Work</button>
+        <button class="preset-btn" onclick="setPreset('Doctor')">🩺 Doctor</button>
+        <button class="preset-btn" onclick="setPreset('Roommate')">🏠 Roommate</button>
+      </div>
+      <button class="btn btn-purple" onclick="startFakeCall()">📲 Start Fake Call</button>
+    </div>
+
+    <div class="card">
+      <div class="tip-title">🎭 What Are Fake Calls?</div>
+      <div class="tip-text">A fake call simulates an incoming phone call so you can excuse yourself from an uncomfortable situation. When you receive the "call," you can pretend to answer and walk away safely. No one around you will know it's not real.</div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════ CONTACTS TAB ══════════════════ -->
+  <section id="tab-contacts" class="tab-content">
+
+    <div class="section-header">👥 Safety Contacts</div>
+
+    <div id="contactsList"></div>
+
+    <div class="card">
+      <div class="card-title">Add New Contact</div>
+      <div class="contact-form-row">
+        <input class="form-input" id="newContactName"  type="text"  placeholder="Contact name"   maxlength="50">
+        <input class="form-input" id="newContactPhone" type="tel"   placeholder="Phone number"   maxlength="20">
+      </div>
+      <button class="btn btn-purple" onclick="addContact()">➕ Add Contact</button>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════ RESOURCES TAB ══════════════════ -->
+  <section id="tab-resources" class="tab-content">
+
+    <div class="section-header">📋 Resources</div>
+
+    <div class="card">
+      <div class="card-title">Emergency Hotlines</div>
+      <div class="resource-item">
+        <div class="resource-emoji">🆘</div>
+        <div class="resource-info">
+          <div class="resource-title">Emergency Services</div>
+          <div class="resource-detail">Call 911 — Police, Fire, Medical</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-emoji">💜</div>
+        <div class="resource-info">
+          <div class="resource-title">RAINN Sexual Assault Hotline</div>
+          <div class="resource-detail">1-800-656-4673 · 24/7 confidential support</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-emoji">🏠</div>
+        <div class="resource-info">
+          <div class="resource-title">National DV Hotline</div>
+          <div class="resource-detail">1-800-799-7233 · Text START to 88788</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-emoji">💬</div>
+        <div class="resource-info">
+          <div class="resource-title">Crisis Text Line</div>
+          <div class="resource-detail">Text HOME to 741741 · Free, 24/7, confidential</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Safety Tips</div>
+      <div class="resource-item">
+        <div class="resource-emoji">📍</div>
+        <div class="resource-info">
+          <div class="resource-title">Share Your Location</div>
+          <div class="resource-detail">Before going somewhere new, share your live location with a trusted person.</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-emoji">🔋</div>
+        <div class="resource-info">
+          <div class="resource-title">Keep Your Phone Charged</div>
+          <div class="resource-detail">Carry a portable charger — a dead phone can't call for help.</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-emoji">👯</div>
+        <div class="resource-info">
+          <div class="resource-title">Buddy System</div>
+          <div class="resource-detail">Travel with a friend when possible, especially at night or in unfamiliar areas.</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-emoji">🧠</div>
+        <div class="resource-info">
+          <div class="resource-title">Trust Your Instincts</div>
+          <div class="resource-detail">If something feels wrong, leave. Your gut is a powerful safety tool.</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════ BOTTOM NAV ══════════════════ -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-home"      onclick="switchTab('home')">
+      <span class="nav-icon">🏠</span>Home
+    </button>
+    <button class="nav-btn" id="nav-checkin"   onclick="switchTab('checkin')">
+      <span class="nav-icon">⏱️</span>Check-In
+    </button>
+    <button class="nav-btn" id="nav-fakecall"  onclick="switchTab('fakecall')">
+      <span class="nav-icon">📞</span>Fake Call
+    </button>
+    <button class="nav-btn" id="nav-contacts"  onclick="switchTab('contacts')">
+      <span class="nav-icon">👥</span>Contacts
+    </button>
+    <button class="nav-btn" id="nav-resources" onclick="switchTab('resources')">
+      <span class="nav-icon">📋</span>Resources
+    </button>
+  </nav>
+
+</div>
+
+<!-- ══════════════════ INCOMING CALL OVERLAY ══════════════════ -->
+<div id="callOverlay" role="dialog" aria-modal="true" aria-label="Incoming call">
+  <div class="call-top-label">📲 Incoming Call</div>
+
+  <div class="call-avatar-wrap">
+    <div class="call-avatar-ring">
+      <div class="call-avatar" id="callAvatarLetter">M</div>
+    </div>
+    <div class="call-name" id="callCallerName">Mom</div>
+    <div class="call-subtitle" id="callSubtitle">mobile · iPhone</div>
+  </div>
+
+  <div class="call-secondary-btns">
+    <button class="call-sec-btn" onclick="void(0)">
+      <span class="sec-icon">🔇</span>Mute
+    </button>
+    <button class="call-sec-btn" onclick="void(0)">
+      <span class="sec-icon">🔊</span>Speaker
+    </button>
+    <button class="call-sec-btn" onclick="void(0)">
+      <span class="sec-icon">⌨️</span>Keypad
+    </button>
+  </div>
+
+  <div class="call-action-btns">
+    <button class="call-btn call-btn-decline" id="callDeclineBtn" onclick="endCall()" aria-label="Decline">
+      📵
+    </button>
+    <button class="call-btn call-btn-answer" id="callAnswerBtn" onclick="answerCall()" aria-label="Answer">
+      📞
+    </button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  GLOBALS
+// ═══════════════════════════════════════════════════════════
+const CONTACTS_KEY = 'safeher-contacts-v2';
+
+let currentTab       = 'home';
+let sosHolding       = false;
+let sosProgress      = 0;
+let sosInterval      = null;
+const SOS_DURATION   = 2000;
+const SOS_STEP_MS    = 50;
+const SOS_CIRCUMFERENCE = 2 * Math.PI * 100; // r=100
+
+let checkinTimerInterval = null;
+let checkinSecondsLeft   = 0;
+let checkinRunning       = false;
+
+let callTimerInterval = null;
+let callElapsed       = 0;
+let callAnswered      = false;
+let callAutoEnd       = null;
+
+// ═══════════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  currentTab = name;
+  if (name === 'contacts') renderContacts();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ALERT BANNER
+// ═══════════════════════════════════════════════════════════
+let alertTimeout = null;
+function showAlert(msg, duration) {
+  const banner = document.getElementById('alertBanner');
+  banner.textContent = msg;
+  banner.classList.add('show');
+  if (alertTimeout) clearTimeout(alertTimeout);
+  alertTimeout = setTimeout(() => banner.classList.remove('show'), duration || 5000);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SOS BUTTON
+// ═══════════════════════════════════════════════════════════
+const sosBtn      = document.getElementById('sosBtn');
+const sosRingFill = document.getElementById('sosRingFill');
+
+function updateRing(progress) {
+  // progress: 0 (empty) → 1 (full)
+  const offset = SOS_CIRCUMFERENCE * (1 - progress);
+  sosRingFill.style.strokeDashoffset = offset;
+}
+
+function sosStart(e) {
+  e.preventDefault();
+  if (sosHolding) return;
+  sosHolding = true;
+  sosProgress = 0;
+  sosBtn.classList.add('holding');
+  updateRing(0);
+
+  sosInterval = setInterval(() => {
+    sosProgress += SOS_STEP_MS;
+    const frac = Math.min(sosProgress / SOS_DURATION, 1);
+    updateRing(frac);
+    if (sosProgress >= SOS_DURATION) {
+      clearInterval(sosInterval);
+      sosInterval = null;
+      sosTrigger();
+    }
+  }, SOS_STEP_MS);
+}
+
+function sosEnd(e) {
+  if (e) e.preventDefault();
+  if (!sosHolding) return;
+  sosHolding = false;
+  if (sosInterval) { clearInterval(sosInterval); sosInterval = null; }
+  sosBtn.classList.remove('holding');
+  updateRing(0);
+  sosRingFill.style.strokeDashoffset = SOS_CIRCUMFERENCE;
+}
+
+function sosTrigger() {
+  sosHolding = false;
+  sosBtn.classList.remove('holding');
+  updateRing(1);
+  showAlert('🆘 SOS Alert Sent! Requesting your location…', 7000);
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => showAlert('🆘 SOS Alert! Location: ' + pos.coords.latitude.toFixed(5) + ', ' + pos.coords.longitude.toFixed(5), 8000),
+      () => showAlert('🆘 SOS Alert Sent! (Location unavailable)', 7000)
+    );
+  }
+
+  // Reset ring after brief moment then resume pulse
+  setTimeout(() => {
+    updateRing(0);
+    sosRingFill.style.strokeDashoffset = SOS_CIRCUMFERENCE;
+  }, 1200);
+}
+
+// Mouse events
+sosBtn.addEventListener('mousedown',  sosStart);
+sosBtn.addEventListener('mouseup',    sosEnd);
+sosBtn.addEventListener('mouseleave', sosEnd);
+// Touch events
+sosBtn.addEventListener('touchstart', sosStart, { passive: false });
+sosBtn.addEventListener('touchend',   sosEnd,   { passive: false });
+sosBtn.addEventListener('touchcancel',sosEnd,   { passive: false });
+
+// ═══════════════════════════════════════════════════════════
+//  CHECK-IN TIMER
+// ═══════════════════════════════════════════════════════════
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function toggleCheckin() {
+  if (!checkinRunning) startCheckin();
+  else stopCheckin(true);
+}
+
+function startCheckin() {
+  const dur = parseInt(document.getElementById('checkinDuration').value, 10);
+  checkinSecondsLeft = dur * 60;
+  checkinRunning = true;
+
+  document.getElementById('checkinDisplay').textContent = formatTime(checkinSecondsLeft);
+  document.getElementById('checkinStatus').textContent = 'Timer running — tap when safe';
+  document.getElementById('checkinDuration').disabled = true;
+  document.getElementById('checkinBtn').textContent = '✅ I\'m Safe — Stop';
+  document.getElementById('checkinBtn').className = 'btn btn-red';
+
+  checkinTimerInterval = setInterval(() => {
+    checkinSecondsLeft--;
+    document.getElementById('checkinDisplay').textContent = formatTime(checkinSecondsLeft);
+    if (checkinSecondsLeft <= 0) {
+      stopCheckin(false);
+      showAlert('⚠️ Check-in timer expired! Are you safe?', 10000);
+    }
+  }, 1000);
+}
+
+function stopCheckin(safe) {
+  clearInterval(checkinTimerInterval);
+  checkinTimerInterval = null;
+  checkinRunning = false;
+
+  document.getElementById('checkinDisplay').textContent = '00:00';
+  document.getElementById('checkinStatus').textContent = safe ? '✅ Glad you\'re safe!' : 'Timer ended — please check in!';
+  document.getElementById('checkinDuration').disabled = false;
+  document.getElementById('checkinBtn').textContent = '▶ Start Timer';
+  document.getElementById('checkinBtn').className = 'btn btn-teal';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FAKE CALL
+// ═══════════════════════════════════════════════════════════
+function setPreset(name) {
+  document.getElementById('callerNameInput').value = name;
+}
+
+function startFakeCall() {
+  let name = document.getElementById('callerNameInput').value.trim();
+  if (!name) name = 'Unknown';
+  // Sanitize
+  const safe = name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const initial = name.charAt(0).toUpperCase();
+
+  document.getElementById('callAvatarLetter').textContent = initial;
+  document.getElementById('callCallerName').textContent = safe;
+  document.getElementById('callSubtitle').textContent = 'mobile · iPhone';
+  document.getElementById('callSubtitle').classList.remove('answered');
+  document.getElementById('callAnswerBtn').style.display = '';
+  callAnswered = false;
+  callElapsed = 0;
+
+  if (callTimerInterval) { clearInterval(callTimerInterval); callTimerInterval = null; }
+  if (callAutoEnd)       { clearTimeout(callAutoEnd); callAutoEnd = null; }
+
+  document.getElementById('callOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function answerCall() {
+  callAnswered = true;
+  document.getElementById('callAnswerBtn').style.display = 'none';
+  document.getElementById('callSubtitle').textContent = '00:00';
+  document.getElementById('callSubtitle').classList.add('answered');
+
+  callElapsed = 0;
+  callTimerInterval = setInterval(() => {
+    callElapsed++;
+    const m = Math.floor(callElapsed / 60);
+    const s = callElapsed % 60;
+    document.getElementById('callSubtitle').textContent =
+      String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }, 1000);
+
+  callAutoEnd = setTimeout(() => endCall(), 60000);
+}
+
+function endCall() {
+  if (callTimerInterval) { clearInterval(callTimerInterval); callTimerInterval = null; }
+  if (callAutoEnd)       { clearTimeout(callAutoEnd); callAutoEnd = null; }
+  document.getElementById('callOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+  callAnswered = false;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CONTACTS
+// ═══════════════════════════════════════════════════════════
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
+function loadContacts() {
+  try {
+    return JSON.parse(localStorage.getItem(CONTACTS_KEY)) || [];
+  } catch { return []; }
+}
+
+function saveContacts(contacts) {
+  localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts));
+}
+
+function renderContacts() {
+  const contacts = loadContacts();
+  const container = document.getElementById('contactsList');
+
+  if (contacts.length === 0) {
+    container.innerHTML = `
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-icon">👥</div>
+          <div class="empty-text">No safety contacts yet.<br>Add someone you trust below.</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = contacts.map((c, i) => `
+    <div class="contact-card">
+      <div class="contact-avatar">${escapeHtml(c.name.charAt(0).toUpperCase())}</div>
+      <div class="contact-info">
+        <div class="contact-name">${escapeHtml(c.name)}</div>
+        <div class="contact-phone">${escapeHtml(c.phone)}</div>
+      </div>
+      <button class="contact-delete" onclick="deleteContact(${i})" aria-label="Delete contact">✕</button>
+    </div>`).join('');
+}
+
+function addContact() {
+  const nameEl  = document.getElementById('newContactName');
+  const phoneEl = document.getElementById('newContactPhone');
+  const name  = nameEl.value.trim();
+  const phone = phoneEl.value.trim();
+
+  if (!name || !phone) {
+    showAlert('⚠️ Please enter both a name and phone number.', 3000);
+    return;
+  }
+
+  const contacts = loadContacts();
+  contacts.push({ name, phone });
+  saveContacts(contacts);
+  nameEl.value  = '';
+  phoneEl.value = '';
+  renderContacts();
+}
+
+function deleteContact(index) {
+  const contacts = loadContacts();
+  contacts.splice(index, 1);
+  saveContacts(contacts);
+  renderContacts();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DAILY TIP ROTATION
+// ═══════════════════════════════════════════════════════════
+const TIPS = [
+  "Share your live location with a trusted friend before going somewhere new. A quick text takes 10 seconds and can make all the difference.",
+  "Keep your phone charged above 30% when heading out. Carry a portable charger for longer outings.",
+  "Walk confidently and stay aware of your surroundings. Avoid looking at your phone while walking alone at night.",
+  "Trust your instincts — if a situation feels wrong, leave immediately without hesitation.",
+  "Save emergency contacts with a special symbol (like ★) at the start so they appear at the top of your contacts list.",
+  "Let someone know your expected return time whenever you go somewhere unfamiliar.",
+  "If you think you're being followed, walk into a busy store or public place and call for help.",
+];
+document.getElementById('dailyTip').textContent = TIPS[new Date().getDay() % TIPS.length];
+
+// ═══════════════════════════════════════════════════════════
+//  SERVICE WORKER REGISTRATION
+// ═══════════════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
