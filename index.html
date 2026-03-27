@@ -15,10 +15,10 @@
 
 /* ── Reset & Base ─────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { height: 100%; }
+html { height: 100%; scroll-behavior: smooth; }
 body {
-  font-family: 'Poppins', sans-serif;
-  background: #0f0a1e;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0b0718;
   color: #e8e0ff;
   min-height: 100%;
   display: flex;
@@ -27,6 +27,20 @@ body {
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
 }
+
+/* ── Smooth Global Selection ─────────────────────────────── */
+::selection {
+  background: rgba(139,92,246,0.35);
+  color: #fff;
+}
+::-webkit-scrollbar { width: 0; background: transparent; }
+
+/* ── Page Load Animation ─────────────────────────────────── */
+@keyframes appFadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#app { animation: appFadeIn 0.5s ease-out; }
 
 /* ── App Shell ────────────────────────────────────────────── */
 #app {
@@ -44,29 +58,35 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: linear-gradient(135deg, #1a1035 0%, #231548 60%, #1a1035 100%);
-  border-bottom: 1px solid rgba(139,92,246,0.2);
+  background: rgba(11,7,24,0.75);
+  border-bottom: 1px solid rgba(139,92,246,0.12);
   padding: 16px 20px 14px;
   display: flex;
   align-items: center;
   gap: 12px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
 }
-.header-icon { font-size: 28px; line-height: 1; }
+.header-icon { font-size: 26px; line-height: 1; }
 .header-text { display: flex; flex-direction: column; }
 .header-title {
-  font-size: 22px;
-  font-weight: 800;
-  background: linear-gradient(90deg, #8B5CF6, #00BFA6);
+  font-size: 21px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #a78bfa, #00d4aa, #a78bfa);
+  background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  line-height: 1.1;
+  line-height: 1.15;
+  animation: shimmerTitle 4s ease-in-out infinite;
+}
+@keyframes shimmerTitle {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 .header-sub {
   font-size: 11px;
-  color: rgba(232,224,255,0.5);
+  color: rgba(232,224,255,0.4);
   font-weight: 400;
   letter-spacing: 0.03em;
 }
@@ -90,9 +110,14 @@ body {
   box-shadow: 0 4px 20px rgba(255,59,107,0.5);
 }
 #alertBanner.show { display: block; }
+#alertBanner.hiding { animation: slideBannerOut 0.3s ease forwards; }
 @keyframes slideBannerIn {
   from { transform: translateY(-100%); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes slideBannerOut {
+  from { transform: translateY(0);    opacity: 1; }
+  to   { transform: translateY(-100%); opacity: 0; }
 }
 
 /* ── Tab Content ──────────────────────────────────────────── */
@@ -101,12 +126,20 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: 20px 16px 100px;
-  animation: fadeSlideIn 0.25s ease;
+  animation: fadeSlideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 .tab-content.active { display: block; }
+.tab-content.tab-exiting {
+  display: block;
+  animation: fadeSlideOut 0.2s ease forwards;
+}
 @keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(16px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fadeSlideOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
 }
 
 /* ── Bottom Nav ───────────────────────────────────────────── */
@@ -118,14 +151,14 @@ body {
   width: 100%;
   max-width: 430px;
   z-index: 200;
-  background: rgba(26,16,53,0.85);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(139,92,246,0.18);
+  background: rgba(11,7,24,0.8);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border-top: 1px solid rgba(139,92,246,0.1);
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  padding: 6px 0 max(8px, env(safe-area-inset-bottom));
 }
 .nav-btn {
   display: flex;
@@ -143,6 +176,23 @@ body {
   border-radius: 12px;
   transition: color 0.2s, transform 0.15s;
   min-width: 60px;
+  touch-action: manipulation;
+  position: relative;
+}
+.nav-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: #00BFA6;
+  border-radius: 1px;
+  transition: width 0.25s ease;
+}
+.nav-btn.active::after {
+  width: 20px;
 }
 .nav-btn .nav-icon { font-size: 22px; transition: transform 0.2s; }
 .nav-btn.active {
@@ -153,32 +203,35 @@ body {
 
 /* ── Cards ────────────────────────────────────────────────── */
 .card {
-  background: #1a1035;
-  border: 1px solid rgba(139,92,246,0.15);
+  background: rgba(22,13,50,0.6);
+  border: 1px solid rgba(139,92,246,0.1);
   border-radius: 20px;
   padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  margin-bottom: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+.card:active { transform: scale(0.985); }
 .card-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(232,224,255,0.5);
+  letter-spacing: 0.1em;
+  color: rgba(232,224,255,0.4);
   margin-bottom: 14px;
 }
 .gradient-border-card {
-  background: #1a1035;
   border-radius: 20px;
-  padding: 2px;
-  background: linear-gradient(135deg, #00BFA6, #6C3FC5, #8B5CF6);
-  margin-bottom: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(0,191,166,0.4), rgba(108,63,197,0.4), rgba(139,92,246,0.4));
+  margin-bottom: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.15);
 }
 .gradient-border-inner {
-  background: #1a1035;
-  border-radius: 18px;
+  background: rgba(16,10,38,0.92);
+  border-radius: 19px;
   padding: 20px;
 }
 
@@ -193,33 +246,37 @@ body {
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.12s, box-shadow 0.12s;
+  transition: transform 0.12s, box-shadow 0.12s, filter 0.2s;
   padding: 14px 24px;
   font-size: 15px;
   width: 100%;
+  touch-action: manipulation;
 }
+.btn:hover { filter: brightness(1.08); }
 .btn:active { transform: scale(0.96); }
 .btn-teal {
-  background: linear-gradient(135deg, #00BFA6, #00968a);
+  background: #00BFA6;
   color: #fff;
-  box-shadow: 0 4px 18px rgba(0,191,166,0.35);
+  box-shadow: 0 2px 12px rgba(0,191,166,0.25);
 }
-.btn-teal:active { box-shadow: 0 2px 8px rgba(0,191,166,0.2); }
+.btn-teal:active { box-shadow: 0 1px 6px rgba(0,191,166,0.15); }
 .btn-red {
-  background: linear-gradient(135deg, #FF3B6B, #c0174a);
+  background: #FF3B6B;
   color: #fff;
-  box-shadow: 0 4px 18px rgba(255,59,107,0.35);
+  box-shadow: 0 2px 12px rgba(255,59,107,0.25);
 }
-.btn-red:active { box-shadow: 0 2px 8px rgba(255,59,107,0.2); }
+.btn-red:active { box-shadow: 0 1px 6px rgba(255,59,107,0.15); }
 .btn-purple {
-  background: linear-gradient(135deg, #6C3FC5, #8B5CF6);
-  color: #fff;
-  box-shadow: 0 4px 18px rgba(108,63,197,0.35);
-}
-.btn-ghost {
-  background: rgba(139,92,246,0.12);
-  color: #8B5CF6;
+  background: rgba(139,92,246,0.2);
+  color: #c4b5fd;
   border: 1px solid rgba(139,92,246,0.25);
+  box-shadow: none;
+}
+.btn-purple:active { background: rgba(139,92,246,0.3); }
+.btn-ghost {
+  background: rgba(139,92,246,0.08);
+  color: #a78bfa;
+  border: 1px solid rgba(139,92,246,0.15);
 }
 
 /* ── Section Header ───────────────────────────────────────── */
@@ -227,10 +284,11 @@ body {
   font-size: 20px;
   font-weight: 700;
   color: #e8e0ff;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   display: flex;
   align-items: center;
   gap: 10px;
+  letter-spacing: -0.3px;
 }
 
 /* ── Status Badge ─────────────────────────────────────────── */
@@ -238,13 +296,13 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(0,191,166,0.1);
-  border: 1px solid rgba(0,191,166,0.3);
+  background: rgba(0,191,166,0.08);
+  border: 1px solid rgba(0,191,166,0.2);
   border-radius: 50px;
-  padding: 8px 16px;
+  padding: 7px 16px;
   font-size: 13px;
   font-weight: 600;
-  color: #00BFA6;
+  color: #00d4aa;
   margin-bottom: 24px;
 }
 .blink-dot {
@@ -295,6 +353,9 @@ body {
   transition: stroke-dashoffset 0.05s linear;
   filter: drop-shadow(0 0 6px #FF3B6B);
 }
+.sos-ring-fill.draining {
+  transition: stroke-dashoffset 0.8s ease;
+}
 #sosBtn {
   width: 180px;
   height: 180px;
@@ -335,10 +396,11 @@ body {
   100% { box-shadow: 0 0 0 0 rgba(255,59,107,0),   0 8px 30px rgba(255,59,107,0.4); }
 }
 .sos-hint {
-  margin-top: 12px;
+  margin-top: 14px;
   font-size: 12px;
-  color: rgba(232,224,255,0.4);
+  color: rgba(232,224,255,0.3);
   text-align: center;
+  letter-spacing: 0.02em;
 }
 
 /* ── Quick Actions Grid ───────────────────────────────────── */
@@ -348,10 +410,10 @@ body {
   gap: 12px;
 }
 .quick-btn {
-  background: #231548;
-  border: 1px solid rgba(139,92,246,0.2);
-  border-radius: 16px;
-  padding: 18px 12px;
+  background: rgba(22,13,50,0.6);
+  border: 1px solid rgba(139,92,246,0.1);
+  border-radius: 18px;
+  padding: 20px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -361,50 +423,101 @@ body {
   font-size: 13px;
   font-weight: 600;
   color: #e8e0ff;
-  transition: transform 0.12s, background 0.15s;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  transition: transform 0.15s ease, background 0.2s, border-color 0.2s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  touch-action: manipulation;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-.quick-btn .q-icon { font-size: 26px; }
-.quick-btn:active { transform: scale(0.96); background: #2e1a5e; }
+.quick-btn .q-icon { font-size: 28px; transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.quick-btn:active { transform: scale(0.94); background: rgba(46,26,94,0.7); }
+.quick-btn:active .q-icon { transform: scale(1.15) rotate(-5deg); }
 
 /* ── Safety Tip Card ──────────────────────────────────────── */
 .tip-title {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   color: #e8e0ff;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .tip-text {
   font-size: 13px;
-  color: rgba(232,224,255,0.6);
-  line-height: 1.6;
+  color: rgba(232,224,255,0.5);
+  line-height: 1.7;
 }
 
 /* ── Check-in Tab ─────────────────────────────────────────── */
 .checkin-display {
   text-align: center;
   padding: 24px 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.checkin-ring-wrap {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.checkin-ring-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 200px; height: 200px;
+  transform: rotate(-90deg);
+}
+.checkin-ring-bg {
+  fill: none;
+  stroke: rgba(0,191,166,0.1);
+  stroke-width: 4;
+}
+.checkin-ring-fill {
+  fill: none;
+  stroke: #00BFA6;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 553;
+  stroke-dashoffset: 553;
+  transition: stroke-dashoffset 1s linear, stroke 0.3s;
+  filter: drop-shadow(0 0 6px rgba(0,191,166,0.5));
+}
+.checkin-ring-fill.expired-ring {
+  stroke: #FF3B6B;
+  filter: drop-shadow(0 0 6px rgba(255,59,107,0.5));
 }
 .checkin-time {
-  font-size: 64px;
+  font-size: 48px;
   font-weight: 700;
   color: #00BFA6;
   line-height: 1;
-  text-shadow: 0 0 30px rgba(0,191,166,0.5), 0 0 60px rgba(0,191,166,0.2);
   letter-spacing: -2px;
   font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+.checkin-time.running {
+  color: #00d4aa;
+  text-shadow: 0 0 30px rgba(0,212,170,0.4);
+}
+.checkin-time.expired {
+  color: #FF3B6B;
+  text-shadow: 0 0 30px rgba(255,59,107,0.4);
 }
 .checkin-status {
   font-size: 13px;
-  color: rgba(232,224,255,0.5);
-  margin-top: 8px;
+  color: rgba(232,224,255,0.45);
+  margin-top: 10px;
   min-height: 20px;
+  letter-spacing: 0.02em;
 }
-.checkin-controls { margin-top: 20px; }
+.checkin-controls { margin-top: 24px; }
 .select-styled {
   width: 100%;
-  background: #231548;
-  border: 1px solid rgba(139,92,246,0.3);
+  background: rgba(22,13,50,0.7);
+  border: 1px solid rgba(139,92,246,0.2);
   border-radius: 14px;
   color: #e8e0ff;
   font-family: 'Poppins', sans-serif;
@@ -418,6 +531,16 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%238B5CF6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  touch-action: manipulation;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.select-styled:focus {
+  outline: none;
+  border-color: rgba(139,92,246,0.5);
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+  background: rgba(30,18,60,0.8);
 }
 .select-styled:disabled { opacity: 0.5; cursor: not-allowed; }
 .how-it-works { margin-top: 0; }
@@ -428,20 +551,21 @@ body {
   gap: 12px;
 }
 .step-num {
-  width: 26px; height: 26px;
-  min-width: 26px;
-  background: linear-gradient(135deg, #6C3FC5, #8B5CF6);
+  width: 28px; height: 28px;
+  min-width: 28px;
+  background: rgba(139,92,246,0.15);
+  border: 1px solid rgba(139,92,246,0.2);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; color: #fff;
+  font-size: 11px; font-weight: 700; color: #a78bfa;
 }
-.step-text { font-size: 13px; color: rgba(232,224,255,0.65); line-height: 1.5; padding-top: 3px; }
+.step-text { font-size: 13px; color: rgba(232,224,255,0.55); line-height: 1.6; padding-top: 4px; }
 
 /* ── Fake Call Tab ────────────────────────────────────────── */
 .caller-input {
   width: 100%;
-  background: #231548;
-  border: 1px solid rgba(139,92,246,0.3);
+  background: rgba(22,13,50,0.7);
+  border: 1px solid rgba(139,92,246,0.2);
   border-radius: 14px;
   color: #e8e0ff;
   font-family: 'Poppins', sans-serif;
@@ -450,10 +574,16 @@ body {
   padding: 14px 18px;
   outline: none;
   margin-bottom: 14px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   transition: border-color 0.2s;
 }
 .caller-input::placeholder { color: rgba(232,224,255,0.3); }
-.caller-input:focus { border-color: rgba(139,92,246,0.6); }
+.caller-input:focus {
+  border-color: rgba(139,92,246,0.5);
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+  background: rgba(30,18,60,0.8);
+}
 .preset-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -461,154 +591,337 @@ body {
   margin-bottom: 14px;
 }
 .preset-btn {
-  background: #231548;
-  border: 1px solid rgba(139,92,246,0.2);
-  border-radius: 12px;
-  color: #e8e0ff;
+  background: rgba(22,13,50,0.6);
+  border: 1px solid rgba(139,92,246,0.12);
+  border-radius: 14px;
+  color: rgba(232,224,255,0.8);
   font-family: 'Poppins', sans-serif;
   font-size: 13px;
   font-weight: 500;
-  padding: 10px 6px;
+  padding: 11px 8px;
   cursor: pointer;
   text-align: center;
-  transition: transform 0.12s, background 0.15s;
+  transition: transform 0.12s, background 0.15s, border-color 0.2s, color 0.15s, box-shadow 0.2s;
+  touch-action: manipulation;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
-.preset-btn:active { transform: scale(0.96); background: #2e1a5e; }
+.preset-btn:active { transform: scale(0.95); background: rgba(46,26,94,0.7); }
+.preset-btn.selected {
+  border-color: rgba(139,92,246,0.45);
+  background: rgba(46,26,94,0.6);
+  color: #a78bfa;
+  box-shadow: 0 0 0 2px rgba(139,92,246,0.08);
+}
 
-/* ── Incoming Call Overlay ────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════
+   iOS CALL OVERLAY — Pixel-perfect iOS 17 recreation
+   ══════════════════════════════════════════════════════════ */
 #callOverlay {
   display: none;
   position: fixed;
-  inset: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   z-index: 10000;
-  background: linear-gradient(180deg, #0d1b3e 0%, #0a1628 40%, #060e1f 100%);
   flex-direction: column;
   align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  overflow: hidden;
+  /* iOS dark call background — not pure black, subtle warm-gray gradient */
+  background: linear-gradient(180deg, #1c1c1e 0%, #111113 40%, #000 100%);
+  -webkit-font-smoothing: antialiased;
+}
+#callOverlay.active { display: flex; opacity: 1; pointer-events: auto; }
+#callOverlay.closing { opacity: 0; pointer-events: none; }
+
+/* ── iOS Status Bar ──────────────────────────────────────── */
+.call-status-bar {
+  width: 100%;
+  display: flex;
   justify-content: space-between;
-  padding: 60px 30px 50px;
-  max-width: 430px;
-  margin: 0 auto;
-  left: 50%;
-  transform: translateX(-50%);
-}
-#callOverlay.active { display: flex; }
-.call-top-label {
-  font-size: 13px;
+  align-items: center;
+  padding: max(14px, env(safe-area-inset-top, 14px)) 26px 0;
+  color: #fff;
+  font-size: 16px;
   font-weight: 600;
-  letter-spacing: 0.15em;
-  color: rgba(255,255,255,0.6);
-  text-transform: uppercase;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  letter-spacing: -0.2px;
 }
+.status-time { flex: 1; text-align: left; }
+.status-center { flex: 1; text-align: center; }
+.status-icons { flex: 1; display: flex; gap: 4px; align-items: center; justify-content: flex-end; }
+
+/* ── Call State Sections ─────────────────────────────────── */
+.call-state-section {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+  padding: 0 32px;
+}
+
+/* ════ INCOMING CALL ════ */
+#callIncoming {
+  padding-top: 24px;
+}
+
 .call-avatar-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  margin-top: 10px;
-}
-.call-avatar-ring {
-  position: relative;
-  width: 140px; height: 140px;
-  display: flex; align-items: center; justify-content: center;
-}
-.call-avatar-ring::before, .call-avatar-ring::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  border: 2px solid rgba(139,92,246,0.3);
-  animation: callRingPulse 2s ease-out infinite;
-}
-.call-avatar-ring::before { width: 100%; height: 100%; animation-delay: 0s; }
-.call-avatar-ring::after  { width: 120%; height: 120%; animation-delay: 0.6s; }
-@keyframes callRingPulse {
-  0%   { opacity: 0.7; transform: scale(1); }
-  100% { opacity: 0;   transform: scale(1.3); }
+  margin-bottom: 12px;
 }
 .call-avatar {
   width: 110px; height: 110px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6C3FC5, #00BFA6);
+  background: #636366;
   display: flex; align-items: center; justify-content: center;
-  font-size: 48px; font-weight: 700; color: #fff;
-  position: relative; z-index: 1;
-  box-shadow: 0 8px 32px rgba(108,63,197,0.5);
+  font-size: 44px;
+  font-weight: 300;
+  color: #fff;
+  letter-spacing: -1px;
+  /* iOS uses a subtle inner shadow on contact circles */
+  box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.08);
 }
+
 .call-name {
-  font-size: 30px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 200;
   color: #fff;
   text-align: center;
+  letter-spacing: 0.4px;
+  line-height: 1.2;
+  margin-bottom: 3px;
 }
+
 .call-subtitle {
-  font-size: 14px;
-  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.55);
   text-align: center;
-  animation: subtitlePulse 2s ease-in-out infinite;
+  letter-spacing: 0;
 }
-.call-subtitle.answered { color: #00BFA6; animation: none; }
-@keyframes subtitlePulse {
-  0%, 100% { opacity: 0.5; }
-  50%       { opacity: 0.9; }
-}
+
+/* ── Remind Me / Message ─────────────────────────────────── */
 .call-secondary-btns {
   display: flex;
-  gap: 28px;
+  gap: 32px;
   justify-content: center;
+  width: 100%;
+  margin-top: auto;
+  margin-bottom: 24px;
 }
-.call-sec-btn {
-  width: 60px; height: 60px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.1);
+
+.call-sec-pill-btn {
   border: none;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 4px;
+  background: none;
+  color: #fff;
+  font-family: inherit;
+  padding: 0;
   cursor: pointer;
-  font-family: 'Poppins', sans-serif;
-  font-size: 10px;
-  color: rgba(255,255,255,0.7);
-  transition: transform 0.12s, background 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  touch-action: manipulation;
+  transition: opacity 0.12s;
 }
-.call-sec-btn .sec-icon { font-size: 20px; }
-.call-sec-btn:active { transform: scale(0.93); background: rgba(255,255,255,0.18); }
+.call-sec-pill-btn:active { opacity: 0.5; }
+
+.pill-icon-circle {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+}
+.pill-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* ── Decline / Accept ────────────────────────────────────── */
 .call-action-btns {
   display: flex;
-  gap: 60px;
-  justify-content: center;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 260px;
+  padding-bottom: max(42px, env(safe-area-inset-bottom, 42px));
+  flex-shrink: 0;
 }
-.call-btn {
-  width: 72px; height: 72px;
-  border-radius: 50%;
+
+.call-action-btn {
+  background: none;
   border: none;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
-  transition: transform 0.12s;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  padding: 0;
+  touch-action: manipulation;
 }
-.call-btn:active { transform: scale(0.93); }
-.call-btn-decline { background: linear-gradient(135deg, #FF3B6B, #c0174a); }
-.call-btn-answer  { background: linear-gradient(135deg, #00BFA6, #007a68); }
+
+.action-circle {
+  width: 66px; height: 66px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.1s ease;
+}
+.action-decline { background: #FF453A; }
+.action-answer  { background: #32D74B; }
+
+.call-action-btn:active .action-circle { transform: scale(0.88); }
+
+.action-label {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0;
+}
+
+/* ════ IN-CALL STATE ════ */
+#callActive {
+  padding-top: 4px;
+  justify-content: flex-start;
+}
+
+.call-name-active {
+  font-size: 19px;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  letter-spacing: -0.2px;
+  margin-bottom: 2px;
+}
+
+.call-duration {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.8px;
+}
+
+/* ── In-Call 3x3 Grid ────────────────────────────────────── */
+.ios-call-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  row-gap: 16px;
+  column-gap: 0;
+  width: 100%;
+  max-width: 300px;
+  margin: auto 0;
+  padding: 0;
+}
+
+.ios-grid-btn {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+}
+
+.grid-btn-circle {
+  width: 66px; height: 66px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.1s, background 0.12s;
+}
+
+.ios-grid-btn:active .grid-btn-circle {
+  transform: scale(0.9);
+  background: rgba(255,255,255,0.18);
+}
+
+/* Active state — white circle, black icon (iOS toggle) */
+.ios-grid-btn.active .grid-btn-circle {
+  background: #fff;
+}
+.ios-grid-btn.active .grid-btn-circle svg { fill: #1c1c1e; }
+.ios-grid-btn.active .grid-btn-circle svg path { fill: #1c1c1e; }
+
+.grid-btn-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0;
+}
+
+/* ── End Call Button ─────────────────────────────────────── */
+.call-end-wrap {
+  padding-bottom: max(42px, env(safe-area-inset-bottom, 42px));
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.call-end-btn {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+}
+.end-call-circle {
+  width: 66px; height: 66px;
+  border-radius: 50%;
+  background: #FF453A;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.1s;
+}
+.call-end-btn:active .end-call-circle { transform: scale(0.88); }
+.end-call-label {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.75);
+}
 
 /* ── Contacts Tab ─────────────────────────────────────────── */
 .contact-card {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: #231548;
-  border: 1px solid rgba(139,92,246,0.15);
-  border-radius: 16px;
-  padding: 14px 16px;
+  background: rgba(22,13,50,0.6);
+  border: 1px solid rgba(139,92,246,0.1);
+  border-radius: 18px;
+  padding: 16px;
   margin-bottom: 10px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.15s ease, background 0.2s;
 }
+.contact-card:active { transform: scale(0.98); background: rgba(30,18,60,0.7); }
 .contact-avatar {
-  width: 46px; height: 46px;
+  width: 48px; height: 48px;
   border-radius: 50%;
   background: linear-gradient(135deg, #6C3FC5, #00BFA6);
   display: flex; align-items: center; justify-content: center;
   font-size: 20px; font-weight: 700; color: #fff;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(108,63,197,0.25);
 }
 .contact-info { flex: 1; min-width: 0; }
 .contact-name {
@@ -619,25 +932,58 @@ body {
   font-size: 12px; color: rgba(232,224,255,0.5); margin-top: 2px;
 }
 .contact-delete {
-  background: rgba(255,59,107,0.12);
-  border: 1px solid rgba(255,59,107,0.25);
-  border-radius: 10px;
+  background: rgba(255,59,107,0.08);
+  border: 1px solid rgba(255,59,107,0.15);
+  border-radius: 12px;
   color: #FF3B6B;
   font-size: 16px;
-  width: 34px; height: 34px;
+  width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   transition: transform 0.12s, background 0.15s;
   flex-shrink: 0;
+  touch-action: manipulation;
 }
-.contact-delete:active { transform: scale(0.92); background: rgba(255,59,107,0.22); }
+.contact-delete:active { transform: scale(0.9); background: rgba(255,59,107,0.18); }
+.contact-card.emergency { border-color: rgba(255,204,0,0.25); }
+.contact-star {
+  background: none; border: none; cursor: pointer; font-size: 18px;
+  color: rgba(232,224,255,0.2); padding: 0; flex-shrink: 0;
+  transition: color 0.2s, transform 0.15s; touch-action: manipulation;
+}
+.contact-star.active { color: #FFCC00; text-shadow: 0 0 8px rgba(255,204,0,0.4); }
+.contact-star:active { transform: scale(1.3); }
+.emergency-badge {
+  display: inline-block; font-size: 9px; font-weight: 700;
+  background: rgba(255,204,0,0.15); color: #FFCC00;
+  padding: 1px 6px; border-radius: 6px; margin-left: 6px;
+  vertical-align: middle; letter-spacing: 0.5px;
+}
+.toast.has-action { pointer-events: auto; }
+.toast-undo-btn {
+  background: none; border: none; color: #00BFA6; font-weight: 700;
+  font-size: 14px; cursor: pointer; margin-left: 10px; padding: 2px 6px;
+  font-family: 'Poppins', sans-serif;
+}
+.toast-undo-btn:active { opacity: 0.7; }
+.form-input.error { border-color: #FF3B6B !important; }
+.form-error-msg { color: #FF3B6B; font-size: 12px; margin-top: 4px; }
+.log-entry {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0; border-bottom: 1px solid rgba(139,92,246,0.06);
+  font-size: 13px;
+}
+.log-entry:last-child { border-bottom: none; }
+.log-icon { flex-shrink: 0; }
+.log-detail { flex: 1; color: #e8e0ff; }
+.log-time { color: rgba(232,224,255,0.35); font-size: 11px; flex-shrink: 0; white-space: nowrap; }
 .empty-state {
   text-align: center;
-  padding: 32px 20px;
-  color: rgba(232,224,255,0.4);
+  padding: 48px 24px;
+  color: rgba(232,224,255,0.35);
 }
-.empty-icon { font-size: 44px; margin-bottom: 12px; }
-.empty-text { font-size: 14px; line-height: 1.6; }
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.6; }
+.empty-text { font-size: 14px; line-height: 1.7; }
 .contact-form-row {
   display: flex;
   flex-direction: column;
@@ -645,8 +991,8 @@ body {
   margin-bottom: 14px;
 }
 .form-input {
-  background: #231548;
-  border: 1px solid rgba(139,92,246,0.3);
+  background: rgba(22,13,50,0.7);
+  border: 1px solid rgba(139,92,246,0.2);
   border-radius: 14px;
   color: #e8e0ff;
   font-family: 'Poppins', sans-serif;
@@ -654,29 +1000,391 @@ body {
   font-weight: 500;
   padding: 14px 18px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   width: 100%;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-.form-input::placeholder { color: rgba(232,224,255,0.3); }
-.form-input:focus { border-color: rgba(139,92,246,0.6); }
+.form-input::placeholder { color: rgba(232,224,255,0.25); }
+.form-input:focus {
+  border-color: rgba(139,92,246,0.5);
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+  background: rgba(30,18,60,0.8);
+}
 
 /* ── Resources Tab ────────────────────────────────────────── */
 .resource-item {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(139,92,246,0.1);
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(139,92,246,0.06);
+  transition: background 0.15s;
 }
 .resource-item:last-child { border-bottom: none; padding-bottom: 0; }
-.resource-emoji { font-size: 24px; line-height: 1.2; flex-shrink: 0; }
+.resource-emoji {
+  font-size: 24px;
+  line-height: 1.2;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(139,92,246,0.08);
+  border-radius: 12px;
+}
 .resource-info { flex: 1; }
 .resource-title { font-size: 14px; font-weight: 600; color: #e8e0ff; }
-.resource-detail { font-size: 12px; color: rgba(232,224,255,0.5); margin-top: 2px; line-height: 1.5; }
+.resource-detail { font-size: 12px; color: rgba(232,224,255,0.45); margin-top: 3px; line-height: 1.6; }
+.resource-link {
+  color: #00d4aa;
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+.resource-link:active { opacity: 0.7; }
+
+/* ── Share Location Card ─────────────────────────────────── */
+.share-location-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s;
+}
+.share-location-card:active { transform: scale(0.97); }
+.share-loc-icon {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  background: rgba(0,191,166,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* ── Call Delay Options ──────────────────────────────────── */
+.delay-options {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.delay-btn {
+  flex: 1;
+  min-width: 50px;
+  background: rgba(22,13,50,0.6);
+  border: 1px solid rgba(139,92,246,0.12);
+  border-radius: 12px;
+  color: rgba(232,224,255,0.7);
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 6px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+}
+.delay-btn:active { transform: scale(0.95); }
+.delay-btn.selected {
+  border-color: rgba(139,92,246,0.45);
+  background: rgba(46,26,94,0.6);
+  color: #a78bfa;
+}
+.delay-status {
+  font-size: 13px;
+  color: rgba(232,224,255,0.5);
+  text-align: center;
+  min-height: 20px;
+  margin-bottom: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Safety Slider ───────────────────────────────────────── */
+.safety-check-text {
+  font-size: 14px;
+  color: rgba(232,224,255,0.65);
+  margin-bottom: 16px;
+}
+.safety-slider-wrap {
+  padding: 0 4px;
+}
+.safety-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #FF453A, #FF9F0A, #FFD60A, #30D158, #00BFA6);
+  outline: none;
+  margin-bottom: 10px;
+}
+.safety-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.safety-slider::-webkit-slider-thumb:active {
+  transform: scale(1.15);
+}
+.safety-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: rgba(232,224,255,0.35);
+  margin-bottom: 12px;
+}
+.safety-response {
+  font-size: 13px;
+  color: rgba(232,224,255,0.55);
+  text-align: center;
+  min-height: 18px;
+  line-height: 1.5;
+  transition: color 0.3s;
+}
+
+/* ── Contact Actions ─────────────────────────────────────── */
+.contact-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.contact-action-btn {
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: transform 0.12s, background 0.15s;
+  touch-action: manipulation;
+}
+.contact-call-btn {
+  background: rgba(0,191,166,0.12);
+  color: #00BFA6;
+}
+.contact-call-btn:active { transform: scale(0.9); background: rgba(0,191,166,0.2); }
+.contact-text-btn {
+  background: rgba(139,92,246,0.1);
+  color: #a78bfa;
+}
+.contact-text-btn:active { transform: scale(0.9); background: rgba(139,92,246,0.18); }
+
+/* ── Countdown Overlay ───────────────────────────────────── */
+.countdown-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9998;
+  background: rgba(11,7,24,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.countdown-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.countdown-number {
+  font-size: 96px;
+  font-weight: 200;
+  color: #a78bfa;
+  animation: countPulse 1s ease infinite;
+}
+.countdown-label {
+  font-size: 14px;
+  color: rgba(232,224,255,0.45);
+  margin-top: 8px;
+}
+@keyframes countPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.08); opacity: 0.7; }
+}
 
 /* ── Misc ─────────────────────────────────────────────────── */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+/* ── Stagger Animations ──────────────────────────────────── */
+.tab-content.active .card:nth-child(1) { animation-delay: 0s; }
+.tab-content.active .card:nth-child(2) { animation-delay: 0.04s; }
+.tab-content.active .card:nth-child(3) { animation-delay: 0.08s; }
+.tab-content.active .card:nth-child(4) { animation-delay: 0.12s; }
+
+/* ── Toast Notification ──────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(30,20,60,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(139,92,246,0.15);
+  border-radius: 16px;
+  padding: 12px 20px;
+  color: #e8e0ff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9000;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  max-width: 340px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Shake Toggle ──────────────────────────────────────── */
+.shake-toggle {
+  background: rgba(22,13,50,0.5); border: 1px solid rgba(139,92,246,0.12);
+  border-radius: 20px; padding: 6px 16px; color: rgba(232,224,255,0.5);
+  font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; margin-top: 8px;
+}
+.shake-toggle.active {
+  background: rgba(0,191,166,0.12); border-color: rgba(0,191,166,0.3);
+  color: #00BFA6;
+}
+
+/* ── Theme Toggle ──────────────────────────────────────── */
+.theme-toggle-btn {
+  background: none; border: none; cursor: pointer; font-size: 20px;
+  padding: 6px; border-radius: 12px; transition: background 0.2s;
+  margin-left: auto;
+}
+.theme-toggle-btn:active { background: rgba(139,92,246,0.1); }
+
+/* ── Activity Log ──────────────────────────────────────── */
+.log-collapsed { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+.log-collapsed.expanded { max-height: 500px; }
+
+/* ── Stagger Card Animations ──────────────────────────── */
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.tab-content.active .card,
+.tab-content.active .gradient-border-card,
+.tab-content.active .contact-card,
+.tab-content.active .share-location-card {
+  animation: cardSlideIn 0.35s ease both;
+}
+.tab-content.active > :nth-child(1) { animation-delay: 0ms; }
+.tab-content.active > :nth-child(2) { animation-delay: 40ms; }
+.tab-content.active > :nth-child(3) { animation-delay: 80ms; }
+.tab-content.active > :nth-child(4) { animation-delay: 120ms; }
+.tab-content.active > :nth-child(5) { animation-delay: 160ms; }
+.tab-content.active > :nth-child(6) { animation-delay: 200ms; }
+.tab-content.active > :nth-child(7) { animation-delay: 240ms; }
+.tab-content.active > :nth-child(8) { animation-delay: 280ms; }
+
+/* ── Focus Visible Styles ─────────────────────────────── */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid #00BFA6;
+  outline-offset: 2px;
+}
+
+/* ── Light Theme ──────────────────────────────────────── */
+body.light-theme {
+  background: linear-gradient(135deg, #f0ecff 0%, #e8e4f8 50%, #f5f3ff 100%) !important;
+}
+body.light-theme #app {
+  background: transparent;
+}
+body.light-theme .app-header {
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom-color: rgba(139,92,246,0.1);
+}
+body.light-theme .header-title {
+  background: linear-gradient(135deg, #6C3FC5, #00BFA6);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+body.light-theme .header-sub { color: rgba(26,26,46,0.5); }
+body.light-theme .card,
+body.light-theme .gradient-border-inner {
+  background: rgba(255,255,255,0.75);
+  border-color: rgba(139,92,246,0.1);
+  color: #1a1a2e;
+}
+body.light-theme .card-title { color: #1a1a2e; }
+body.light-theme .section-header { color: #1a1a2e; }
+body.light-theme .tab-content { color: #1a1a2e; }
+body.light-theme .contact-card {
+  background: rgba(255,255,255,0.75);
+  border-color: rgba(139,92,246,0.1);
+}
+body.light-theme .contact-name { color: #1a1a2e; }
+body.light-theme .contact-phone { color: rgba(26,26,46,0.5); }
+body.light-theme .form-input {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(139,92,246,0.15);
+  color: #1a1a2e;
+}
+body.light-theme .form-input::placeholder { color: rgba(26,26,46,0.35); }
+body.light-theme .bottom-nav {
+  background: rgba(255,255,255,0.85);
+  border-top-color: rgba(139,92,246,0.1);
+}
+body.light-theme .nav-btn { color: rgba(26,26,46,0.45); }
+body.light-theme .nav-btn.active { color: #6C3FC5; }
+body.light-theme .status-badge {
+  background: rgba(0,191,166,0.1);
+  color: #00897B;
+}
+body.light-theme .sos-hint { color: rgba(26,26,46,0.4); }
+body.light-theme .tip-title,
+body.light-theme .tip-text { color: #1a1a2e; }
+body.light-theme .share-location-card { color: #1a1a2e; }
+body.light-theme .quick-btn {
+  background: rgba(0,0,0,0.04); color: #1a1a2e;
+  border-color: rgba(139,92,246,0.1);
+}
+body.light-theme .toast {
+  background: rgba(255,255,255,0.95); color: #1a1a2e;
+  border-color: rgba(139,92,246,0.15);
+}
+body.light-theme .empty-text { color: rgba(26,26,46,0.4); }
+body.light-theme .log-detail { color: #1a1a2e; }
+body.light-theme .log-time { color: rgba(26,26,46,0.4); }
+body.light-theme .shake-toggle {
+  background: rgba(0,0,0,0.04); color: rgba(26,26,46,0.5);
+  border-color: rgba(139,92,246,0.1);
+}
+body.light-theme .shake-toggle.active {
+  background: rgba(0,191,166,0.1); color: #00897B;
+}
+body.light-theme #alertBanner {
+  background: rgba(255,255,255,0.95); color: #1a1a2e;
+}
+body.light-theme .preset-btn {
+  background: rgba(0,0,0,0.04); color: #1a1a2e;
+  border-color: rgba(139,92,246,0.1);
+}
+body.light-theme .delay-btn {
+  background: rgba(0,0,0,0.04); color: #1a1a2e;
+  border-color: rgba(139,92,246,0.1);
+}
+body.light-theme .resource-item { border-bottom-color: rgba(139,92,246,0.06); }
+body.light-theme .resource-name { color: #1a1a2e; }
+body.light-theme .resource-number { color: #6C3FC5; }
+body.light-theme .safety-tip-item { color: rgba(26,26,46,0.7); }
+body.light-theme .contact-star { color: rgba(26,26,46,0.2); }
+body.light-theme .contact-star.active { color: #FFCC00; }
 </style>
 </head>
 <body>
@@ -692,10 +1400,13 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
       <div class="header-title">SafeHer</div>
       <div class="header-sub">Your Safety Companion</div>
     </div>
+    <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+      <span id="themeIcon">🌙</span>
+    </button>
   </header>
 
   <!-- ══════════════════ HOME TAB ══════════════════ -->
-  <section id="tab-home" class="tab-content active">
+  <section id="tab-home" class="tab-content active" role="tabpanel" aria-labelledby="nav-home">
 
     <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:4px;">
       <div class="status-badge">
@@ -717,6 +1428,18 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
         </button>
       </div>
       <p class="sos-hint">Hold the button for 2 seconds to send an alert</p>
+      <button class="shake-toggle" id="shakeToggle" onclick="toggleShakeSOS()" aria-label="Toggle shake to SOS">
+        📳 Shake-to-SOS
+      </button>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="card" id="activityLogCard" style="display:none;">
+      <div class="card-title" onclick="document.getElementById('activityLogContent').classList.toggle('expanded')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+        Recent Activity
+        <span style="font-size:12px;opacity:0.4;">tap to expand</span>
+      </div>
+      <div id="activityLogContent" class="log-collapsed"></div>
     </div>
 
     <!-- Safety Tip -->
@@ -724,6 +1447,18 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
       <div class="gradient-border-inner">
         <div class="tip-title">💡 Safety Tip of the Day</div>
         <div class="tip-text" id="dailyTip">Share your live location with a trusted friend before going somewhere new. A quick text takes 10 seconds and can make all the difference.</div>
+      </div>
+    </div>
+
+    <!-- Share Location -->
+    <div class="card share-location-card" onclick="shareLocation()">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="share-loc-icon">📍</div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:600;">Share My Location</div>
+          <div style="font-size:12px;color:rgba(232,224,255,0.45);margin-top:2px;">Tap to send your GPS coordinates</div>
+        </div>
+        <div style="font-size:18px;opacity:0.4;">›</div>
       </div>
     </div>
 
@@ -749,13 +1484,19 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
   </section>
 
   <!-- ══════════════════ CHECK-IN TAB ══════════════════ -->
-  <section id="tab-checkin" class="tab-content">
+  <section id="tab-checkin" class="tab-content" role="tabpanel" aria-labelledby="nav-checkin">
 
     <div class="section-header">⏱️ Check-In Timer</div>
 
     <div class="card">
       <div class="checkin-display">
-        <div class="checkin-time" id="checkinDisplay">00:00</div>
+        <div class="checkin-ring-wrap">
+          <svg class="checkin-ring-svg" viewBox="0 0 200 200">
+            <circle class="checkin-ring-bg" cx="100" cy="100" r="88"/>
+            <circle class="checkin-ring-fill" cx="100" cy="100" r="88" id="checkinRingFill"/>
+          </svg>
+          <div class="checkin-time" id="checkinDisplay">00:00</div>
+        </div>
         <div class="checkin-status" id="checkinStatus">Set a timer and tap Start</div>
       </div>
       <div class="checkin-controls">
@@ -797,7 +1538,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
   </section>
 
   <!-- ══════════════════ FAKE CALL TAB ══════════════════ -->
-  <section id="tab-fakecall" class="tab-content">
+  <section id="tab-fakecall" class="tab-content" role="tabpanel" aria-labelledby="nav-fakecall">
 
     <div class="section-header">📞 Fake Call</div>
 
@@ -812,7 +1553,19 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
         <button class="preset-btn" onclick="setPreset('Doctor')">🩺 Doctor</button>
         <button class="preset-btn" onclick="setPreset('Roommate')">🏠 Roommate</button>
       </div>
-      <button class="btn btn-purple" onclick="startFakeCall()">📲 Start Fake Call</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Call Delay</div>
+      <div class="delay-options">
+        <button class="delay-btn selected" onclick="setCallDelay(0)">Now</button>
+        <button class="delay-btn" onclick="setCallDelay(5)">5 sec</button>
+        <button class="delay-btn" onclick="setCallDelay(15)">15 sec</button>
+        <button class="delay-btn" onclick="setCallDelay(30)">30 sec</button>
+        <button class="delay-btn" onclick="setCallDelay(60)">1 min</button>
+      </div>
+      <div class="delay-status" id="delayStatus"></div>
+      <button class="btn btn-purple" id="fakeCallBtn" onclick="startFakeCall()">📲 Start Fake Call</button>
     </div>
 
     <div class="card">
@@ -823,7 +1576,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
   </section>
 
   <!-- ══════════════════ CONTACTS TAB ══════════════════ -->
-  <section id="tab-contacts" class="tab-content">
+  <section id="tab-contacts" class="tab-content" role="tabpanel" aria-labelledby="nav-contacts">
 
     <div class="section-header">👥 Safety Contacts</div>
 
@@ -841,7 +1594,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
   </section>
 
   <!-- ══════════════════ RESOURCES TAB ══════════════════ -->
-  <section id="tab-resources" class="tab-content">
+  <section id="tab-resources" class="tab-content" role="tabpanel" aria-labelledby="nav-resources">
 
     <div class="section-header">📋 Resources</div>
 
@@ -851,28 +1604,28 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
         <div class="resource-emoji">🆘</div>
         <div class="resource-info">
           <div class="resource-title">Emergency Services</div>
-          <div class="resource-detail">Call 911 — Police, Fire, Medical</div>
+          <div class="resource-detail"><a href="tel:911" class="resource-link">911</a> — Police, Fire, Medical</div>
         </div>
       </div>
       <div class="resource-item">
         <div class="resource-emoji">💜</div>
         <div class="resource-info">
           <div class="resource-title">RAINN Sexual Assault Hotline</div>
-          <div class="resource-detail">1-800-656-4673 · 24/7 confidential support</div>
+          <div class="resource-detail"><a href="tel:18006564673" class="resource-link">1-800-656-4673</a> · 24/7 confidential support</div>
         </div>
       </div>
       <div class="resource-item">
         <div class="resource-emoji">🏠</div>
         <div class="resource-info">
           <div class="resource-title">National DV Hotline</div>
-          <div class="resource-detail">1-800-799-7233 · Text START to 88788</div>
+          <div class="resource-detail"><a href="tel:18007997233" class="resource-link">1-800-799-7233</a> · Text START to 88788</div>
         </div>
       </div>
       <div class="resource-item">
         <div class="resource-emoji">💬</div>
         <div class="resource-info">
           <div class="resource-title">Crisis Text Line</div>
-          <div class="resource-detail">Text HOME to 741741 · Free, 24/7, confidential</div>
+          <div class="resource-detail">Text <strong>HOME</strong> to <a href="sms:741741&body=HOME" class="resource-link">741741</a> · Free, 24/7, confidential</div>
         </div>
       </div>
     </div>
@@ -909,60 +1662,175 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-title">Quick Safety Check</div>
+      <div class="safety-check-text">How safe do you feel right now?</div>
+      <div class="safety-slider-wrap">
+        <input type="range" min="1" max="5" value="3" class="safety-slider" id="safetySlider" oninput="updateSafetyLevel()">
+        <div class="safety-labels">
+          <span>Unsafe</span>
+          <span>Uneasy</span>
+          <span>Okay</span>
+          <span>Safe</span>
+          <span>Very Safe</span>
+        </div>
+      </div>
+      <div class="safety-response" id="safetyResponse"></div>
+    </div>
+
   </section>
 
   <!-- ══════════════════ BOTTOM NAV ══════════════════ -->
-  <nav class="bottom-nav">
-    <button class="nav-btn active" id="nav-home"      onclick="switchTab('home')">
+  <nav class="bottom-nav" role="tablist" aria-label="Main navigation">
+    <button class="nav-btn active" id="nav-home" role="tab" aria-selected="true" aria-controls="tab-home" onclick="switchTab('home')">
       <span class="nav-icon">🏠</span>Home
     </button>
-    <button class="nav-btn" id="nav-checkin"   onclick="switchTab('checkin')">
+    <button class="nav-btn" id="nav-checkin" role="tab" aria-selected="false" aria-controls="tab-checkin" onclick="switchTab('checkin')">
       <span class="nav-icon">⏱️</span>Check-In
     </button>
-    <button class="nav-btn" id="nav-fakecall"  onclick="switchTab('fakecall')">
+    <button class="nav-btn" id="nav-fakecall" role="tab" aria-selected="false" aria-controls="tab-fakecall" onclick="switchTab('fakecall')">
       <span class="nav-icon">📞</span>Fake Call
     </button>
-    <button class="nav-btn" id="nav-contacts"  onclick="switchTab('contacts')">
+    <button class="nav-btn" id="nav-contacts" role="tab" aria-selected="false" aria-controls="tab-contacts" onclick="switchTab('contacts')">
       <span class="nav-icon">👥</span>Contacts
     </button>
-    <button class="nav-btn" id="nav-resources" onclick="switchTab('resources')">
+    <button class="nav-btn" id="nav-resources" role="tab" aria-selected="false" aria-controls="tab-resources" onclick="switchTab('resources')">
       <span class="nav-icon">📋</span>Resources
     </button>
   </nav>
 
 </div>
 
+<!-- Countdown Overlay -->
+<div class="countdown-overlay" id="countdownOverlay">
+  <div class="countdown-number" id="countdownNumber">5</div>
+  <div class="countdown-label">Call incoming...</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
 <!-- ══════════════════ INCOMING CALL OVERLAY ══════════════════ -->
 <div id="callOverlay" role="dialog" aria-modal="true" aria-label="Incoming call">
-  <div class="call-top-label">📲 Incoming Call</div>
+  <!-- iOS Status Bar -->
+  <div class="call-status-bar">
+    <div class="status-time" id="callStatusTime">9:41</div>
+    <div class="status-center"></div>
+    <div class="status-icons">
+      <!-- Cell signal (4 bars, iOS rounded rect style) -->
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="9" width="3.2" height="3" rx="0.7" fill="white"/><rect x="4.6" y="6" width="3.2" height="6" rx="0.7" fill="white"/><rect x="9.2" y="3" width="3.2" height="9" rx="0.7" fill="white"/><rect x="13.8" y="0" width="3.2" height="12" rx="0.7" fill="white"/></svg>
+      <!-- WiFi (3 arcs + dot) -->
+      <svg width="16" height="13" viewBox="0 0 16 13" fill="none" style="margin-left:3px"><circle cx="8" cy="11.5" r="1.3" fill="white"/><path d="M5.2 9.2a3.8 3.8 0 015.6 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M2.6 6.6a7.2 7.2 0 0110.8 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M0.4 4a10.8 10.8 0 0115.2 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <!-- Battery (iOS 17 style with nub) -->
+      <svg width="28" height="13" viewBox="0 0 28 13" fill="none" style="margin-left:3px"><rect x="0.5" y="0.5" width="23" height="12" rx="3" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><rect x="2" y="2" width="20" height="9" rx="2" fill="white"/><path d="M25 4.5v4a2.2 2.2 0 000-4z" fill="rgba(255,255,255,0.35)"/></svg>
+    </div>
+  </div>
 
-  <div class="call-avatar-wrap">
-    <div class="call-avatar-ring">
+  <!-- ════ INCOMING CALL STATE ════ -->
+  <div id="callIncoming" class="call-state-section">
+    <div class="call-avatar-wrap">
       <div class="call-avatar" id="callAvatarLetter">M</div>
     </div>
     <div class="call-name" id="callCallerName">Mom</div>
-    <div class="call-subtitle" id="callSubtitle">mobile · iPhone</div>
+    <div class="call-subtitle" id="callSubtitle">iPhone</div>
+
+    <!-- Remind Me / Message -->
+    <div class="call-secondary-btns">
+      <button class="call-sec-pill-btn">
+        <div class="pill-icon-circle">
+          <!-- Clock icon (SF Symbol style — thin stroke) -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 13.5"/></svg>
+        </div>
+        <span class="pill-label">Remind Me</span>
+      </button>
+      <button class="call-sec-pill-btn">
+        <div class="pill-icon-circle">
+          <!-- Message bubble icon (SF Symbol style) -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14c0 .74-.21 1.43-.58 2-.92 1.42-2.88 2.4-5.42 2.4-.89 0-1.73-.12-2.49-.34L7 20l1.3-3.24C6.87 15.65 6 14.4 6 13c0-2.76 3.13-5 7-5s7 2.24 7 5z"/></svg>
+        </div>
+        <span class="pill-label">Message</span>
+      </button>
+    </div>
+
+    <!-- Decline / Accept -->
+    <div class="call-action-btns">
+      <button class="call-action-btn" id="callDeclineBtn" onclick="endCall()">
+        <div class="action-circle action-decline">
+          <!-- Phone down (hang up / decline) — rotated handset -->
+          <svg width="33" height="33" viewBox="0 0 56 56" fill="white"><path d="M28 20c-4.4 0-8.6.7-12.5 2v8.4c0 1-.6 2-1.5 2.4-2.7 1.4-5.1 3.1-7.3 5.1-.5.5-1.2.7-1.9.7s-1.4-.3-1.9-.8l-2.1-2.1c-.5-.5-.8-1.2-.8-1.9s.3-1.5.8-2C5.5 27.3 16.2 22 28 22s22.5 5.3 27.2 9.8c.5.5.8 1.2.8 1.9s-.3 1.4-.8 1.9L53.1 37.8c-.5.5-1.2.8-1.9.8s-1.4-.3-1.9-.8c-2.2-2-4.6-3.6-7.3-5.1-.9-.5-1.5-1.4-1.5-2.4V22c-3.9-1.3-8.1-2-12.5-2z"/></svg>
+        </div>
+        <div class="action-label">Decline</div>
+      </button>
+      <button class="call-action-btn" id="callAnswerBtn" onclick="answerCall()">
+        <div class="action-circle action-answer">
+          <!-- Phone pickup (answer) — classic handset -->
+          <svg width="33" height="33" viewBox="0 0 56 56" fill="white"><path d="M46.4 37.8l-8.2-3.6c-1.2-.5-2.6-.2-3.5.8l-3 3.6c-6.8-3.5-12.3-9-15.8-15.8l3.6-3c1-1 1.3-2.3.8-3.5L16.7 8.1c-.6-1.3-1.9-2.1-3.3-2.1-.3 0-.5 0-.8.1C6 7.6 1 13 1 19.6 1 39.7 16.3 55 36.4 55c6.6 0 12-5 13.5-11.6.4-1.6-.3-3.2-1.7-4l-1.8-1.6z"/></svg>
+        </div>
+        <div class="action-label">Accept</div>
+      </button>
+    </div>
   </div>
 
-  <div class="call-secondary-btns">
-    <button class="call-sec-btn" onclick="void(0)">
-      <span class="sec-icon">🔇</span>Mute
-    </button>
-    <button class="call-sec-btn" onclick="void(0)">
-      <span class="sec-icon">🔊</span>Speaker
-    </button>
-    <button class="call-sec-btn" onclick="void(0)">
-      <span class="sec-icon">⌨️</span>Keypad
-    </button>
-  </div>
+  <!-- ════ IN-CALL STATE ════ -->
+  <div id="callActive" class="call-state-section" style="display: none; opacity: 0;">
+    <div class="call-name-active" id="callCallerNameActive">Mom</div>
+    <div class="call-duration" id="callDuration">00:00</div>
 
-  <div class="call-action-btns">
-    <button class="call-btn call-btn-decline" id="callDeclineBtn" onclick="endCall()" aria-label="Decline">
-      📵
-    </button>
-    <button class="call-btn call-btn-answer" id="callAnswerBtn" onclick="answerCall()" aria-label="Answer">
-      📞
-    </button>
+    <!-- 3x3 Grid: mute / keypad / speaker / add call / FaceTime / contacts -->
+    <div class="ios-call-grid">
+      <button class="ios-grid-btn" id="callGridMute" onclick="toggleCallMute()">
+        <div class="grid-btn-circle">
+          <!-- Microphone -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+        </div>
+        <div class="grid-btn-label">mute</div>
+      </button>
+      <button class="ios-grid-btn">
+        <div class="grid-btn-circle">
+          <!-- Keypad grid -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><circle cx="6" cy="5" r="1.6"/><circle cx="12" cy="5" r="1.6"/><circle cx="18" cy="5" r="1.6"/><circle cx="6" cy="11" r="1.6"/><circle cx="12" cy="11" r="1.6"/><circle cx="18" cy="11" r="1.6"/><circle cx="6" cy="17" r="1.6"/><circle cx="12" cy="17" r="1.6"/><circle cx="18" cy="17" r="1.6"/><circle cx="12" cy="22" r="1.2"/></svg>
+        </div>
+        <div class="grid-btn-label">keypad</div>
+      </button>
+      <button class="ios-grid-btn" id="callGridSpeaker" onclick="toggleCallSpeaker()">
+        <div class="grid-btn-circle">
+          <!-- Speaker -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 9 2 9 2 15 6 15 11 19 11 5 6 9" fill="white" stroke="none"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M19 5a10 10 0 010 14"/></svg>
+        </div>
+        <div class="grid-btn-label">speaker</div>
+      </button>
+      <button class="ios-grid-btn">
+        <div class="grid-btn-circle">
+          <!-- Plus (add call) -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <div class="grid-btn-label">add call</div>
+      </button>
+      <button class="ios-grid-btn">
+        <div class="grid-btn-circle">
+          <!-- FaceTime camera -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="14" height="12" rx="2"/><polygon points="23 7 17 12 23 17 23 7"/></svg>
+        </div>
+        <div class="grid-btn-label">FaceTime</div>
+      </button>
+      <button class="ios-grid-btn">
+        <div class="grid-btn-circle">
+          <!-- Person (contacts) -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0116 0v1"/></svg>
+        </div>
+        <div class="grid-btn-label">contacts</div>
+      </button>
+    </div>
+
+    <!-- End Call -->
+    <div class="call-end-wrap">
+      <button class="call-end-btn" onclick="endCall()">
+        <div class="end-call-circle">
+          <svg width="33" height="33" viewBox="0 0 56 56" fill="white"><path d="M28 20c-4.4 0-8.6.7-12.5 2v8.4c0 1-.6 2-1.5 2.4-2.7 1.4-5.1 3.1-7.3 5.1-.5.5-1.2.7-1.9.7s-1.4-.3-1.9-.8l-2.1-2.1c-.5-.5-.8-1.2-.8-1.9s.3-1.5.8-2C5.5 27.3 16.2 22 28 22s22.5 5.3 27.2 9.8c.5.5.8 1.2.8 1.9s-.3 1.4-.8 1.9L53.1 37.8c-.5.5-1.2.8-1.9.8s-1.4-.3-1.9-.8c-2.2-2-4.6-3.6-7.3-5.1-.9-.5-1.5-1.4-1.5-2.4V22c-3.9-1.3-8.1-2-12.5-2z"/></svg>
+        </div>
+        <div class="end-call-label">End</div>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -989,16 +1857,195 @@ let callElapsed       = 0;
 let callAnswered      = false;
 let callAutoEnd       = null;
 
+// Call audio
+let callRingtoneAudio = null;
+let callRingtonePlaying = false;
+let callMuted         = false;
+let callStatusClock   = null;
+let callDelay         = 0;
+let callDelayTimer    = null;
+let countdownInterval = null;
+
+// ═══════════════════════════════════════════════════════════
+//  HAPTIC FEEDBACK
+// ═══════════════════════════════════════════════════════════
+function haptic(type) {
+  if (!navigator.vibrate) return;
+  const patterns = {
+    sosTrigger:   [100, 50, 100, 50, 300],
+    sosProgress:  [30],
+    delete:       [15],
+    timerExpiry:  [200, 100, 200, 100, 200],
+    callRing:     [80, 40, 80, 200, 80, 40, 80],
+    buttonTap:    [10],
+    success:      [40, 30, 40],
+    undo:         [20, 20, 20],
+  };
+  navigator.vibrate(patterns[type] || [20]);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GEOLOCATION HELPER
+// ═══════════════════════════════════════════════════════════
+function handleGeoError(err) {
+  const msgs = {
+    1: 'Location permission denied. Please enable in Settings.',
+    2: 'Location unavailable. Check GPS or network connection.',
+    3: 'Location request timed out. Please try again.',
+  };
+  showToast(msgs[err.code] || 'Could not get location.');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ACTIVITY LOG
+// ═══════════════════════════════════════════════════════════
+const LOG_KEY = 'safeher-log';
+function logEvent(type, detail) {
+  try {
+    const log = JSON.parse(localStorage.getItem(LOG_KEY)) || [];
+    log.unshift({ type, detail, time: Date.now() });
+    if (log.length > 50) log.length = 50;
+    localStorage.setItem(LOG_KEY, JSON.stringify(log));
+    renderActivityLog();
+  } catch {}
+}
+
+function renderActivityLog() {
+  const container = document.getElementById('activityLogContent');
+  const card = document.getElementById('activityLogCard');
+  if (!container || !card) return;
+  const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+  if (log.length === 0) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  const icons = { sos: '🆘', checkin: '⏱️', fakecall: '📱', checkin_expire: '⚠️' };
+  container.innerHTML = log.slice(0, 10).map(e => {
+    const d = new Date(e.time);
+    const timeStr = d.toLocaleDateString(undefined, { month:'short', day:'numeric' }) + ' ' +
+      d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+    return `<div class="log-entry">
+      <span class="log-icon">${icons[e.type] || '📌'}</span>
+      <span class="log-detail">${escapeHtml(e.detail)}</span>
+      <span class="log-time">${timeStr}</span>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CALL AUDIO — iPhone Ringtone
+// ═══════════════════════════════════════════════════════════
+function startRingtone() {
+  if (callRingtonePlaying) return;
+  callRingtonePlaying = true;
+
+  // Use the real iOS "Reflection" ringtone audio file
+  if (!callRingtoneAudio) {
+    callRingtoneAudio = new Audio('reflection.m4a');
+    callRingtoneAudio.loop = true;
+  }
+  callRingtoneAudio.volume = callMuted ? 0 : 1.0;
+  callRingtoneAudio.currentTime = 0;
+  callRingtoneAudio.play().catch(() => { startWebAudioFallback(); });
+}
+
+// Web Audio fallback if audio file fails
+let fallbackCtx = null, fallbackOscs = [], fallbackGain = null, fallbackPlaying = false;
+function startWebAudioFallback() {
+  if (fallbackPlaying) return;
+  fallbackPlaying = true;
+  if (!fallbackCtx) fallbackCtx = new (window.AudioContext || window.webkitAudioContext)();
+  fallbackGain = fallbackCtx.createGain();
+  fallbackGain.connect(fallbackCtx.destination);
+  fallbackGain.gain.value = callMuted ? 0 : 0.3;
+
+  function ringBurst(t) {
+    if (!fallbackPlaying) return;
+    [440, 480].forEach(freq => {
+      const osc = fallbackCtx.createOscillator();
+      const g = fallbackCtx.createGain();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      osc.connect(g); g.connect(fallbackGain);
+      g.gain.setValueAtTime(0.5, t);
+      g.gain.exponentialRampToValueAtTime(0.01, t + 2);
+      osc.start(t); osc.stop(t + 2);
+      fallbackOscs.push(osc);
+    });
+    setTimeout(() => { if (fallbackPlaying) ringBurst(fallbackCtx.currentTime); }, 4000);
+  }
+  ringBurst(fallbackCtx.currentTime);
+}
+function stopWebAudioFallback() {
+  fallbackPlaying = false;
+  fallbackOscs.forEach(o => { try { o.stop(); } catch {} });
+  fallbackOscs = [];
+  if (fallbackGain) fallbackGain.gain.value = 0;
+}
+
+function stopRingtone() {
+  callRingtonePlaying = false;
+  if (callRingtoneAudio) {
+    callRingtoneAudio.pause();
+    callRingtoneAudio.currentTime = 0;
+  }
+  stopWebAudioFallback();
+}
+
+function toggleCallMute() {
+  callMuted = !callMuted;
+  const gridMuteBtn = document.getElementById('callGridMute');
+
+  if (callMuted) {
+    gridMuteBtn.classList.add('active');
+    if (callRingtoneAudio) callRingtoneAudio.volume = 0;
+  } else {
+    gridMuteBtn.classList.remove('active');
+    if (callRingtoneAudio) callRingtoneAudio.volume = 1.0;
+  }
+}
+
+function toggleCallSpeaker() {
+  const btn = document.getElementById('callGridSpeaker');
+  if (btn) btn.classList.toggle('active');
+}
+
+function updateCallStatusBar() {
+  const now = new Date();
+  let hours = now.getHours();
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  // iOS uses 12-hour format without leading zero
+  const h12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  const timeStr = h12 + ':' + minutes;
+  const timeEl = document.getElementById('callStatusTime');
+  if (timeEl) timeEl.textContent = timeStr;
+}
+
 // ═══════════════════════════════════════════════════════════
 //  TAB SWITCHING
 // ═══════════════════════════════════════════════════════════
 function switchTab(name) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  document.getElementById('nav-' + name).classList.add('active');
-  currentTab = name;
-  if (name === 'contacts') renderContacts();
+  const oldTab = document.getElementById('tab-' + currentTab);
+  if (oldTab) {
+    oldTab.classList.add('tab-exiting');
+    oldTab.classList.remove('active');
+  }
+
+  setTimeout(() => {
+    if (oldTab) oldTab.classList.remove('tab-exiting');
+
+    document.querySelectorAll('.nav-btn').forEach(el => {
+      el.classList.remove('active');
+      el.setAttribute('aria-selected', 'false');
+    });
+    const newTab = document.getElementById('tab-' + name);
+    newTab.classList.add('active');
+    const navBtn = document.getElementById('nav-' + name);
+    navBtn.classList.add('active');
+    navBtn.setAttribute('aria-selected', 'true');
+    newTab.scrollTop = 0;
+
+    currentTab = name;
+    if (name === 'contacts') renderContacts();
+    if (name === 'home') renderActivityLog();
+  }, 180);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1008,9 +2055,15 @@ let alertTimeout = null;
 function showAlert(msg, duration) {
   const banner = document.getElementById('alertBanner');
   banner.textContent = msg;
+  banner.classList.remove('hiding');
   banner.classList.add('show');
   if (alertTimeout) clearTimeout(alertTimeout);
-  alertTimeout = setTimeout(() => banner.classList.remove('show'), duration || 5000);
+  alertTimeout = setTimeout(() => {
+    banner.classList.add('hiding');
+    setTimeout(() => {
+      banner.classList.remove('show', 'hiding');
+    }, 300);
+  }, duration || 5000);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1037,6 +2090,12 @@ function sosStart(e) {
     sosProgress += SOS_STEP_MS;
     const frac = Math.min(sosProgress / SOS_DURATION, 1);
     updateRing(frac);
+
+    // Haptic feedback every 25% progress
+    if (Math.round(frac * 4) > Math.round((sosProgress - SOS_STEP_MS) / SOS_DURATION * 4)) {
+      haptic('sosProgress');
+    }
+
     if (sosProgress >= SOS_DURATION) {
       clearInterval(sosInterval);
       sosInterval = null;
@@ -1055,23 +2114,60 @@ function sosEnd(e) {
   sosRingFill.style.strokeDashoffset = SOS_CIRCUMFERENCE;
 }
 
+function sendSOSSms(locationStr) {
+  const contacts = loadContacts();
+  const emergency = contacts.filter(c => c.emergency);
+  const targets = emergency.length > 0 ? emergency : contacts;
+
+  if (targets.length === 0) {
+    showToast('Add emergency contacts to send SOS alerts');
+    return;
+  }
+
+  const phones = targets.map(c => c.phone).join(',');
+  const body = locationStr
+    ? `🆘 SOS! I need help! My location: ${locationStr}`
+    : '🆘 SOS! I need help! Please check on me.';
+  window.open(`sms:${phones}?&body=${encodeURIComponent(body)}`, '_self');
+}
+
 function sosTrigger() {
   sosHolding = false;
   sosBtn.classList.remove('holding');
   updateRing(1);
+
+  haptic('sosTrigger');
+  logEvent('sos', 'SOS alert triggered');
+
   showAlert('🆘 SOS Alert Sent! Requesting your location…', 7000);
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-      pos => showAlert('🆘 SOS Alert! Location: ' + pos.coords.latitude.toFixed(5) + ', ' + pos.coords.longitude.toFixed(5), 8000),
-      () => showAlert('🆘 SOS Alert Sent! (Location unavailable)', 7000)
+      pos => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lng = pos.coords.longitude.toFixed(6);
+        const mapsUrl = `https://maps.google.com/maps?q=${lat},${lng}`;
+        showAlert('🆘 SOS Alert! Opening SMS…', 5000);
+        sendSOSSms(mapsUrl);
+      },
+      () => {
+        showAlert('🆘 SOS Alert! Sending without location…', 5000);
+        sendSOSSms(null);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
     );
+  } else {
+    sendSOSSms(null);
   }
 
-  // Reset ring after brief moment then resume pulse
+  // Reset ring after brief moment
   setTimeout(() => {
+    sosRingFill.classList.add('draining');
     updateRing(0);
     sosRingFill.style.strokeDashoffset = SOS_CIRCUMFERENCE;
+    setTimeout(() => {
+      sosRingFill.classList.remove('draining');
+    }, 800);
   }, 1200);
 }
 
@@ -1098,12 +2194,37 @@ function toggleCheckin() {
   else stopCheckin(true);
 }
 
-function startCheckin() {
-  const dur = parseInt(document.getElementById('checkinDuration').value, 10);
-  checkinSecondsLeft = dur * 60;
+let checkinTotalSeconds = 0;
+const CHECKIN_CIRCUMFERENCE = 2 * Math.PI * 88; // r=88
+
+function updateCheckinRing(progress) {
+  const ring = document.getElementById('checkinRingFill');
+  if (ring) ring.style.strokeDashoffset = CHECKIN_CIRCUMFERENCE * (1 - progress);
+}
+
+function startCheckin(resumeSeconds) {
+  if (resumeSeconds !== undefined) {
+    checkinSecondsLeft = resumeSeconds;
+    checkinTotalSeconds = resumeSeconds; // approximate for ring
+  } else {
+    const dur = parseInt(document.getElementById('checkinDuration').value, 10);
+    checkinSecondsLeft = dur * 60;
+    checkinTotalSeconds = checkinSecondsLeft;
+    // Persist to localStorage
+    localStorage.setItem('safeher-checkin', JSON.stringify({
+      startTime: Date.now(),
+      durationSec: checkinTotalSeconds
+    }));
+    logEvent('checkin', `Started ${dur}min check-in`);
+  }
   checkinRunning = true;
 
-  document.getElementById('checkinDisplay').textContent = formatTime(checkinSecondsLeft);
+  const display = document.getElementById('checkinDisplay');
+  display.textContent = formatTime(checkinSecondsLeft);
+  display.classList.add('running');
+  display.classList.remove('expired');
+  document.getElementById('checkinRingFill').classList.remove('expired-ring');
+  updateCheckinRing(1);
   document.getElementById('checkinStatus').textContent = 'Timer running — tap when safe';
   document.getElementById('checkinDuration').disabled = true;
   document.getElementById('checkinBtn').textContent = '✅ I\'m Safe — Stop';
@@ -1112,9 +2233,36 @@ function startCheckin() {
   checkinTimerInterval = setInterval(() => {
     checkinSecondsLeft--;
     document.getElementById('checkinDisplay').textContent = formatTime(checkinSecondsLeft);
+    updateCheckinRing(checkinSecondsLeft / checkinTotalSeconds);
+
     if (checkinSecondsLeft <= 0) {
+      document.getElementById('checkinDisplay').classList.remove('running');
+      document.getElementById('checkinDisplay').classList.add('expired');
+      document.getElementById('checkinRingFill').classList.add('expired-ring');
       stopCheckin(false);
+
+      haptic('timerExpiry');
+      logEvent('checkin_expire', 'Check-in timer expired');
+
       showAlert('⚠️ Check-in timer expired! Are you safe?', 10000);
+
+      // Auto-alert emergency contacts
+      const contacts = loadContacts();
+      const emergency = contacts.filter(c => c.emergency);
+      const targets = emergency.length > 0 ? emergency : contacts;
+      if (targets.length > 0) {
+        const phones = targets.map(c => c.phone).join(',');
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(pos => {
+            const url = `https://maps.google.com/maps?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
+            window.open(`sms:${phones}?&body=${encodeURIComponent("⚠️ I haven't checked in on SafeHer. My last location: " + url)}`, '_self');
+          }, () => {
+            window.open(`sms:${phones}?&body=${encodeURIComponent("⚠️ I haven't checked in on SafeHer. Please check on me.")}`, '_self');
+          }, { timeout: 5000 });
+        } else {
+          window.open(`sms:${phones}?&body=${encodeURIComponent("⚠️ I haven't checked in on SafeHer. Please check on me.")}`, '_self');
+        }
+      }
     }
   }, 1000);
 }
@@ -1123,8 +2271,13 @@ function stopCheckin(safe) {
   clearInterval(checkinTimerInterval);
   checkinTimerInterval = null;
   checkinRunning = false;
+  localStorage.removeItem('safeher-checkin');
 
-  document.getElementById('checkinDisplay').textContent = '00:00';
+  const display = document.getElementById('checkinDisplay');
+  display.textContent = '00:00';
+  display.classList.remove('running', 'expired');
+  updateCheckinRing(0);
+  document.getElementById('checkinRingFill').classList.remove('expired-ring');
   document.getElementById('checkinStatus').textContent = safe ? '✅ Glad you\'re safe!' : 'Timer ended — please check in!';
   document.getElementById('checkinDuration').disabled = false;
   document.getElementById('checkinBtn').textContent = '▶ Start Timer';
@@ -1135,43 +2288,135 @@ function stopCheckin(safe) {
 //  FAKE CALL
 // ═══════════════════════════════════════════════════════════
 function setPreset(name) {
+  // Remove selected state from all presets
+  document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('selected'));
+  // Add selected state to clicked preset
+  event.target.classList.add('selected');
   document.getElementById('callerNameInput').value = name;
 }
 
 function startFakeCall() {
   let name = document.getElementById('callerNameInput').value.trim();
   if (!name) name = 'Unknown';
+
+  // Cancel any pending delayed call
+  if (callDelayTimer) { clearTimeout(callDelayTimer); callDelayTimer = null; }
+  if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+
+  if (callDelay > 0) {
+    // Show countdown then trigger call
+    const cdOverlay = document.getElementById('countdownOverlay');
+    const cdNumber = document.getElementById('countdownNumber');
+    let remaining = callDelay;
+    cdNumber.textContent = remaining;
+    cdOverlay.classList.add('active');
+
+    const btn = document.getElementById('fakeCallBtn');
+    btn.textContent = '⏳ Cancel Pending Call';
+    btn.onclick = function() {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+      cdOverlay.classList.remove('active');
+      btn.textContent = '📲 Start Fake Call';
+      btn.onclick = startFakeCall;
+      document.getElementById('delayStatus').textContent = '';
+    };
+
+    countdownInterval = setInterval(() => {
+      remaining--;
+      cdNumber.textContent = remaining;
+      if (remaining <= 0) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+        cdOverlay.classList.remove('active');
+        btn.textContent = '📲 Start Fake Call';
+        btn.onclick = startFakeCall;
+        document.getElementById('delayStatus').textContent = '';
+        triggerFakeCall(name);
+      }
+    }, 1000);
+    return;
+  }
+
+  triggerFakeCall(name);
+}
+
+function triggerFakeCall(name) {
   // Sanitize
   const safe = name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const initial = name.charAt(0).toUpperCase();
 
-  document.getElementById('callAvatarLetter').textContent = initial;
+  // Set dynamic background colors based on initial letter
+  const charCode = initial.charCodeAt(0);
+  const hue1 = (charCode * 47) % 360;
+  const overlay = document.getElementById('callOverlay');
+
+  // Set avatar color based on caller name
+  const avatar = document.getElementById('callAvatarLetter');
+  avatar.textContent = initial;
+  avatar.style.background = `hsl(${hue1}, 40%, 50%)`;
+
   document.getElementById('callCallerName').textContent = safe;
-  document.getElementById('callSubtitle').textContent = 'mobile · iPhone';
-  document.getElementById('callSubtitle').classList.remove('answered');
-  document.getElementById('callAnswerBtn').style.display = '';
+  document.getElementById('callCallerNameActive').textContent = safe;
+  document.getElementById('callSubtitle').textContent = 'iPhone';
   callAnswered = false;
   callElapsed = 0;
+  callMuted = false;
+  document.getElementById('callGridMute').classList.remove('active');
+  const speakerBtn = document.getElementById('callGridSpeaker');
+  if (speakerBtn) speakerBtn.classList.remove('active');
 
   if (callTimerInterval) { clearInterval(callTimerInterval); callTimerInterval = null; }
   if (callAutoEnd)       { clearTimeout(callAutoEnd); callAutoEnd = null; }
 
-  document.getElementById('callOverlay').classList.add('active');
+  // Update status bar clock
+  updateCallStatusBar();
+  if (callStatusClock) clearInterval(callStatusClock);
+  callStatusClock = setInterval(updateCallStatusBar, 60000);
+
+  // Start ringtone audio
+  startRingtone();
+
+  haptic('callRing');
+
+  overlay.classList.remove('closing');
+  overlay.classList.add('active');
+  document.getElementById('callIncoming').style.opacity = '1';
+  document.getElementById('callIncoming').style.display = 'flex';
+  document.getElementById('callActive').style.opacity = '0';
+  document.getElementById('callActive').style.display = 'none';
   document.body.style.overflow = 'hidden';
+
+  logEvent('fakecall', `Fake call from ${name}`);
+  trapFocus(overlay);
 }
 
 function answerCall() {
   callAnswered = true;
-  document.getElementById('callAnswerBtn').style.display = 'none';
-  document.getElementById('callSubtitle').textContent = '00:00';
-  document.getElementById('callSubtitle').classList.add('answered');
+  stopRingtone();
+
+  const incomingSection = document.getElementById('callIncoming');
+  const activeSection = document.getElementById('callActive');
+
+  // Fade out incoming, fade in active
+  incomingSection.style.opacity = '0';
+  setTimeout(() => {
+    incomingSection.style.display = 'none';
+    activeSection.style.display = 'flex';
+    activeSection.style.opacity = '0';
+    setTimeout(() => {
+      activeSection.style.opacity = '1';
+    }, 20);
+  }, 300);
 
   callElapsed = 0;
+  document.getElementById('callDuration').textContent = '00:00';
+
   callTimerInterval = setInterval(() => {
     callElapsed++;
     const m = Math.floor(callElapsed / 60);
     const s = callElapsed % 60;
-    document.getElementById('callSubtitle').textContent =
+    document.getElementById('callDuration').textContent =
       String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
   }, 1000);
 
@@ -1181,8 +2426,23 @@ function answerCall() {
 function endCall() {
   if (callTimerInterval) { clearInterval(callTimerInterval); callTimerInterval = null; }
   if (callAutoEnd)       { clearTimeout(callAutoEnd); callAutoEnd = null; }
-  document.getElementById('callOverlay').classList.remove('active');
-  document.body.style.overflow = '';
+  if (callStatusClock)   { clearInterval(callStatusClock); callStatusClock = null; }
+
+  stopRingtone();
+
+  const overlay = document.getElementById('callOverlay');
+  overlay.classList.add('closing');
+  releaseFocus(overlay);
+
+  setTimeout(() => {
+    overlay.classList.remove('active', 'closing');
+    document.getElementById('callIncoming').style.opacity = '1';
+    document.getElementById('callIncoming').style.display = 'flex';
+    document.getElementById('callActive').style.opacity = '0';
+    document.getElementById('callActive').style.display = 'none';
+    document.body.style.overflow = '';
+  }, 350);
+
   callAnswered = false;
 }
 
@@ -1224,13 +2484,18 @@ function renderContacts() {
   }
 
   container.innerHTML = contacts.map((c, i) => `
-    <div class="contact-card">
+    <div class="contact-card${c.emergency ? ' emergency' : ''}">
+      <button class="contact-star${c.emergency ? ' active' : ''}" onclick="toggleEmergency(${i})" aria-label="${c.emergency ? 'Remove from' : 'Mark as'} emergency contact">★</button>
       <div class="contact-avatar">${escapeHtml(c.name.charAt(0).toUpperCase())}</div>
       <div class="contact-info">
-        <div class="contact-name">${escapeHtml(c.name)}</div>
+        <div class="contact-name">${escapeHtml(c.name)}${c.emergency ? ' <span class="emergency-badge">SOS</span>' : ''}</div>
         <div class="contact-phone">${escapeHtml(c.phone)}</div>
       </div>
-      <button class="contact-delete" onclick="deleteContact(${i})" aria-label="Delete contact">✕</button>
+      <div class="contact-actions">
+        <a class="contact-action-btn contact-call-btn" href="tel:${escapeHtml(c.phone)}" aria-label="Call">📞</a>
+        <a class="contact-action-btn contact-text-btn" href="sms:${escapeHtml(c.phone)}" aria-label="Text">💬</a>
+        <button class="contact-action-btn contact-delete" onclick="deleteContact(${i})" aria-label="Delete">✕</button>
+      </div>
     </div>`).join('');
 }
 
@@ -1240,13 +2505,10 @@ function addContact() {
   const name  = nameEl.value.trim();
   const phone = phoneEl.value.trim();
 
-  if (!name || !phone) {
-    showAlert('⚠️ Please enter both a name and phone number.', 3000);
-    return;
-  }
+  if (!validateContactInputs()) return;
 
   const contacts = loadContacts();
-  contacts.push({ name, phone });
+  contacts.push({ name, phone, emergency: false });
   saveContacts(contacts);
   nameEl.value  = '';
   phoneEl.value = '';
@@ -1255,9 +2517,128 @@ function addContact() {
 
 function deleteContact(index) {
   const contacts = loadContacts();
-  contacts.splice(index, 1);
+  const removed = contacts.splice(index, 1)[0];
   saveContacts(contacts);
+  haptic('delete');
   renderContacts();
+
+  // Undo toast
+  showUndoToast(`Deleted ${removed.name}`, () => {
+    const c = loadContacts();
+    c.splice(index, 0, removed);
+    saveContacts(c);
+    haptic('undo');
+    renderContacts();
+  });
+}
+
+function toggleEmergency(index) {
+  const contacts = loadContacts();
+  contacts[index].emergency = !contacts[index].emergency;
+  saveContacts(contacts);
+  haptic('buttonTap');
+  renderContacts();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CALL DELAY
+// ═══════════════════════════════════════════════════════════
+function setCallDelay(seconds) {
+  callDelay = seconds;
+  document.querySelectorAll('.delay-btn').forEach(btn => btn.classList.remove('selected'));
+  event.target.classList.add('selected');
+  document.getElementById('delayStatus').textContent = '';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SHARE LOCATION
+// ═══════════════════════════════════════════════════════════
+function shareLocation() {
+  if (!navigator.geolocation) {
+    showToast('Location not available on this device');
+    return;
+  }
+
+  showToast('Getting your location...');
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude.toFixed(6);
+      const lng = pos.coords.longitude.toFixed(6);
+      const mapsUrl = `https://maps.google.com/maps?q=${lat},${lng}`;
+
+      if (navigator.share) {
+        navigator.share({
+          title: 'My Location',
+          text: `I'm here: ${mapsUrl}`,
+          url: mapsUrl
+        }).catch(() => {});
+      } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(`I'm here: ${mapsUrl}`).then(() => {
+          showToast('Location copied to clipboard!');
+        }).catch(() => {
+          showToast(`📍 ${lat}, ${lng}`);
+        });
+      }
+    },
+    handleGeoError,
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TOAST NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════
+let toastTimeout = null;
+function showToast(msg, duration) {
+  const toast = document.getElementById('toast');
+  toast.innerHTML = '';
+  toast.textContent = msg;
+  toast.classList.remove('has-action');
+  toast.classList.add('show');
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove('show');
+  }, duration || 3000);
+}
+
+function showUndoToast(msg, callback) {
+  const toast = document.getElementById('toast');
+  toast.innerHTML = `${escapeHtml(msg)} <button class="toast-undo-btn" id="toastUndoBtn">Undo</button>`;
+  toast.classList.add('show', 'has-action');
+  if (toastTimeout) clearTimeout(toastTimeout);
+  document.getElementById('toastUndoBtn').onclick = () => {
+    callback();
+    toast.classList.remove('show', 'has-action');
+    clearTimeout(toastTimeout);
+  };
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove('show', 'has-action');
+  }, 5000);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SAFETY CHECK SLIDER
+// ═══════════════════════════════════════════════════════════
+const safetyResponses = [
+  '',
+  '🚨 Consider leaving this situation. Use SOS or call someone you trust.',
+  '⚠️ Stay alert. Share your location and keep your phone ready.',
+  '',
+  '👍 Great! Keep staying aware of your surroundings.',
+  '💚 Wonderful! Enjoy your time.'
+];
+
+function updateSafetyLevel() {
+  const val = parseInt(document.getElementById('safetySlider').value, 10);
+  const resp = document.getElementById('safetyResponse');
+  resp.textContent = safetyResponses[val];
+  if (val <= 2) resp.style.color = '#FF453A';
+  else if (val === 3) resp.style.color = 'rgba(232,224,255,0.45)';
+  else resp.style.color = '#30D158';
+
+  haptic('buttonTap');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1271,8 +2652,227 @@ const TIPS = [
   "Save emergency contacts with a special symbol (like ★) at the start so they appear at the top of your contacts list.",
   "Let someone know your expected return time whenever you go somewhere unfamiliar.",
   "If you think you're being followed, walk into a busy store or public place and call for help.",
+  "Wear headphones with only one earbud in so you can hear your surroundings while still looking occupied.",
+  "Take a photo of the license plate of any rideshare vehicle before getting in.",
+  "When meeting someone new, always choose a public place with other people around.",
+  "Keep a portable door lock or door stop alarm when staying in unfamiliar places.",
+  "Use the fake call feature when you feel uncomfortable — no one will know it's not real.",
+  "Set up the check-in timer before a date or meeting. If you don't check in, others will know to check on you.",
+  "Memorize at least one emergency contact number in case your phone dies or is taken.",
 ];
 document.getElementById('dailyTip').textContent = TIPS[new Date().getDay() % TIPS.length];
+
+// ═══════════════════════════════════════════════════════════
+//  RESUME CHECK-IN TIMER ON PAGE LOAD
+// ═══════════════════════════════════════════════════════════
+(function resumeCheckin() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('safeher-checkin'));
+    if (!saved) return;
+    const elapsed = Math.floor((Date.now() - saved.startTime) / 1000);
+    const remaining = saved.durationSec - elapsed;
+    if (remaining > 0) {
+      startCheckin(remaining);
+    } else {
+      localStorage.removeItem('safeher-checkin');
+      // Timer expired while away
+      showAlert('⚠️ Check-in timer expired while you were away!', 10000);
+    }
+  } catch { localStorage.removeItem('safeher-checkin'); }
+})();
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER ACTIVITY LOG ON LOAD
+// ═══════════════════════════════════════════════════════════
+renderActivityLog();
+
+// ═══════════════════════════════════════════════════════════
+//  SHAKE-TO-SOS DETECTION
+// ═══════════════════════════════════════════════════════════
+let shakeCount = 0;
+let lastShakeTime = 0;
+let shakeResetTimer = null;
+const SHAKE_ENABLED_KEY = 'safeher-shake-sos';
+
+function handleShake(e) {
+  const acc = e.accelerationIncludingGravity;
+  if (!acc) return;
+  const mag = Math.sqrt(acc.x ** 2 + acc.y ** 2 + acc.z ** 2);
+  if (mag > 30) {
+    const now = Date.now();
+    if (now - lastShakeTime > 300) {
+      shakeCount++;
+      lastShakeTime = now;
+    }
+    if (shakeCount >= 3) {
+      shakeCount = 0;
+      sosTrigger();
+    }
+    clearTimeout(shakeResetTimer);
+    shakeResetTimer = setTimeout(() => { shakeCount = 0; }, 2000);
+  }
+}
+
+function toggleShakeSOS() {
+  const enabled = localStorage.getItem(SHAKE_ENABLED_KEY) === 'true';
+  if (enabled) {
+    window.removeEventListener('devicemotion', handleShake);
+    localStorage.setItem(SHAKE_ENABLED_KEY, 'false');
+    document.getElementById('shakeToggle').classList.remove('active');
+    showToast('Shake-to-SOS disabled');
+  } else {
+    // iOS 13+ requires permission
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission().then(perm => {
+        if (perm === 'granted') {
+          window.addEventListener('devicemotion', handleShake);
+          localStorage.setItem(SHAKE_ENABLED_KEY, 'true');
+          document.getElementById('shakeToggle').classList.add('active');
+          showToast('Shake-to-SOS enabled');
+        } else {
+          showToast('Motion permission denied');
+        }
+      }).catch(() => showToast('Motion permission denied'));
+    } else {
+      window.addEventListener('devicemotion', handleShake);
+      localStorage.setItem(SHAKE_ENABLED_KEY, 'true');
+      document.getElementById('shakeToggle').classList.add('active');
+      showToast('Shake-to-SOS enabled');
+    }
+  }
+}
+
+// Restore shake detection on load
+if (localStorage.getItem(SHAKE_ENABLED_KEY) === 'true') {
+  window.addEventListener('devicemotion', handleShake);
+  const shakeBtn = document.getElementById('shakeToggle');
+  if (shakeBtn) shakeBtn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FOCUS TRAPPING FOR OVERLAYS
+// ═══════════════════════════════════════════════════════════
+let previouslyFocused = null;
+
+function trapFocus(container) {
+  previouslyFocused = document.activeElement;
+  const focusable = container.querySelectorAll('button, [href], input, select, [tabindex]:not([tabindex="-1"])');
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  function handler(e) {
+    if (e.key !== 'Tab') return;
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  }
+  container._focusTrapHandler = handler;
+  container.addEventListener('keydown', handler);
+  first.focus();
+}
+
+function releaseFocus(container) {
+  if (container._focusTrapHandler) {
+    container.removeEventListener('keydown', container._focusTrapHandler);
+    delete container._focusTrapHandler;
+  }
+  if (previouslyFocused) { previouslyFocused.focus(); previouslyFocused = null; }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  KEYBOARD NAVIGATION FOR TABS
+// ═══════════════════════════════════════════════════════════
+document.querySelector('.bottom-nav').addEventListener('keydown', (e) => {
+  const tabs = ['home', 'checkin', 'fakecall', 'contacts', 'resources'];
+  const idx = tabs.indexOf(currentTab);
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    const next = tabs[(idx + 1) % tabs.length];
+    switchTab(next);
+    document.getElementById('nav-' + next).focus();
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const prev = tabs[(idx - 1 + tabs.length) % tabs.length];
+    switchTab(prev);
+    document.getElementById('nav-' + prev).focus();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  THEME TOGGLE
+// ═══════════════════════════════════════════════════════════
+const THEME_KEY = 'safeher-theme';
+
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-theme');
+  localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
+  const icon = document.getElementById('themeIcon');
+  if (icon) icon.textContent = isLight ? '☀️' : '🌙';
+}
+
+// Restore theme on load
+(function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const preferLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  if (saved === 'light' || (!saved && preferLight)) {
+    document.body.classList.add('light-theme');
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.textContent = '☀️';
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════
+//  INPUT VALIDATION
+// ═══════════════════════════════════════════════════════════
+function validateContactInputs() {
+  const nameEl = document.getElementById('newContactName');
+  const phoneEl = document.getElementById('newContactPhone');
+  let valid = true;
+
+  // Clear previous errors
+  nameEl.classList.remove('error');
+  phoneEl.classList.remove('error');
+  document.querySelectorAll('.form-error-msg').forEach(el => el.remove());
+
+  const name = nameEl.value.trim();
+  const phone = phoneEl.value.trim();
+
+  if (!name || name.length < 2) {
+    nameEl.classList.add('error');
+    nameEl.insertAdjacentHTML('afterend', '<div class="form-error-msg">Name must be at least 2 characters</div>');
+    valid = false;
+  }
+
+  if (!phone) {
+    phoneEl.classList.add('error');
+    phoneEl.insertAdjacentHTML('afterend', '<div class="form-error-msg">Phone number is required</div>');
+    valid = false;
+  } else {
+    const phoneClean = phone.replace(/[\s\-\(\)\.]/g, '');
+    if (!/^\+?\d{7,15}$/.test(phoneClean)) {
+      phoneEl.classList.add('error');
+      phoneEl.insertAdjacentHTML('afterend', '<div class="form-error-msg">Enter a valid phone number</div>');
+      valid = false;
+    }
+  }
+
+  return valid;
+}
+
+// Clear errors on focus
+document.getElementById('newContactName').addEventListener('focus', function() {
+  this.classList.remove('error');
+  const err = this.nextElementSibling;
+  if (err && err.classList.contains('form-error-msg')) err.remove();
+});
+document.getElementById('newContactPhone').addEventListener('focus', function() {
+  this.classList.remove('error');
+  const err = this.nextElementSibling;
+  if (err && err.classList.contains('form-error-msg')) err.remove();
+});
 
 // ═══════════════════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
