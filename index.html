@@ -1979,7 +1979,7 @@ body.light-theme .settings-panel { background: #f5f3ff; }
 
     <!-- Shake Toggle -->
     <div style="display:flex;justify-content:center;margin-top:4px;">
-      <button class="shake-toggle" id="shakeToggle" onclick="toggleShakeSOS()" aria-label="Toggle shake to SOS">
+      <button class="shake-toggle" id="shakeToggle" onclick="toggleShakeSOS()" role="switch" aria-checked="false" aria-label="Shake-to-SOS">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
         Shake-to-SOS
       </button>
@@ -2316,14 +2316,14 @@ body.light-theme .settings-panel { background: #f5f3ff; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
         Dark Mode
       </div>
-      <button class="toggle-switch on" id="darkModeToggle" onclick="toggleTheme()"></button>
+      <button class="toggle-switch on" id="darkModeToggle" onclick="toggleTheme()" role="switch" aria-checked="true" aria-label="Dark mode"></button>
     </div>
     <div class="settings-row">
       <div class="settings-row-label">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
         Shake-to-SOS
       </div>
-      <button class="toggle-switch" id="shakeToggleSwitch" onclick="toggleShakeSOS()"></button>
+      <button class="toggle-switch" id="shakeToggleSwitch" onclick="toggleShakeSOS()" role="switch" aria-checked="false" aria-label="Shake-to-SOS"></button>
     </div>
     <div class="settings-link" onclick="switchTab('resources');toggleSettings();">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
@@ -3028,7 +3028,7 @@ function toggleTheme() {
     ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
     : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
   const toggle = document.getElementById('darkModeToggle');
-  if (toggle) isLight ? toggle.classList.remove('on') : toggle.classList.add('on');
+  if (toggle) { isLight ? toggle.classList.remove('on') : toggle.classList.add('on'); toggle.setAttribute('aria-checked', String(!isLight)); }
 }
 (function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
@@ -3038,7 +3038,7 @@ function toggleTheme() {
     const icon = document.getElementById('themeIcon');
     icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
     const toggle = document.getElementById('darkModeToggle');
-    if (toggle) toggle.classList.remove('on');
+    if (toggle) { toggle.classList.remove('on'); toggle.setAttribute('aria-checked', 'false'); }
   }
 })();
 
@@ -3062,8 +3062,8 @@ function toggleShakeSOS() {
   if (enabled) {
     window.removeEventListener('devicemotion', handleShake);
     localStorage.setItem(SHAKE_ENABLED_KEY, 'false');
-    document.getElementById('shakeToggle').classList.remove('active');
-    const sw = document.getElementById('shakeToggleSwitch'); if (sw) sw.classList.remove('on');
+    const st = document.getElementById('shakeToggle'); st.classList.remove('active'); st.setAttribute('aria-checked', 'false');
+    const sw = document.getElementById('shakeToggleSwitch'); if (sw) { sw.classList.remove('on'); sw.setAttribute('aria-checked', 'false'); }
     showToast('Shake-to-SOS disabled');
   } else {
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
@@ -3076,14 +3076,14 @@ function toggleShakeSOS() {
 function enableShake() {
   window.addEventListener('devicemotion', handleShake);
   localStorage.setItem(SHAKE_ENABLED_KEY, 'true');
-  document.getElementById('shakeToggle').classList.add('active');
-  const sw = document.getElementById('shakeToggleSwitch'); if (sw) sw.classList.add('on');
+  const st = document.getElementById('shakeToggle'); st.classList.add('active'); st.setAttribute('aria-checked', 'true');
+  const sw = document.getElementById('shakeToggleSwitch'); if (sw) { sw.classList.add('on'); sw.setAttribute('aria-checked', 'true'); }
   showToast('Shake-to-SOS enabled');
 }
 if (localStorage.getItem(SHAKE_ENABLED_KEY) === 'true') {
   window.addEventListener('devicemotion', handleShake);
-  document.getElementById('shakeToggle').classList.add('active');
-  const sw = document.getElementById('shakeToggleSwitch'); if (sw) sw.classList.add('on');
+  const st = document.getElementById('shakeToggle'); st.classList.add('active'); st.setAttribute('aria-checked', 'true');
+  const sw = document.getElementById('shakeToggleSwitch'); if (sw) { sw.classList.add('on'); sw.setAttribute('aria-checked', 'true'); }
 }
 
 // ═══════════════════════════════════════════════════════════
