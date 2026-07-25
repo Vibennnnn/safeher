@@ -2447,6 +2447,7 @@ const SOS_DURATION = 2000, SOS_STEP_MS = 50;
 const SOS_CIRCUMFERENCE = 2 * Math.PI * 32; // r=32 for FAB ring
 
 let checkinTimerInterval = null, checkinSecondsLeft = 0, checkinRunning = false, checkinTotalSeconds = 0;
+let checkinWatchId = null, checkinLastPosition = null, checkinGeoErrorShown = false;
 const CHECKIN_CIRCUMFERENCE = 2 * Math.PI * 88;
 
 let callTimerInterval = null, callElapsed = 0, callAnswered = false, callAutoEnd = null;
@@ -2480,6 +2481,10 @@ function formatTime(seconds) {
 function handleGeoError(err) {
   const msgs = { 1:'Location permission denied.', 2:'Location unavailable.', 3:'Location request timed out.' };
   showToast(msgs[err.code] || 'Could not get location.');
+}
+function formatLocationUrl(pos) {
+  const acc = pos.coords.accuracy ? ` (accuracy ±${Math.round(pos.coords.accuracy)}m)` : '';
+  return `https://maps.google.com/maps?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}${acc}`;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2575,6 +2580,7 @@ function showAlert(msg, duration) {
 const sosBtn = document.getElementById('sosBtn');
 const sosRingFill = document.getElementById('sosRingFill');
 const sosVignette = document.getElementById('sosVignette');
+let sosWatchId = null;
 
 function updateRing(progress) {
   sosRingFill.style.strokeDashoffset = SOS_CIRCUMFERENCE * (1 - progress);
@@ -2621,12 +2627,25 @@ function sosTrigger() {
   logEvent('sos', 'SOS alert triggered');
   updateStatusHero('alert');
   showAlert('SOS Alert Sent! Requesting your location...', 7000);
+  if (sosWatchId !== null) { navigator.geolocation.clearWatch(sosWatchId); sosWatchId = null; }
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => { const url = `https://maps.google.com/maps?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`; showAlert('SOS Alert! Opening SMS...', 5000); sendSOSSms(url); },
-      () => { showAlert('SOS Alert! Sending without location...', 5000); sendSOSSms(null); },
+    let sosSmsSent = false;
+    sosWatchId = navigator.geolocation.watchPosition(
+      pos => {
+        if (!sosSmsSent) { sosSmsSent = true; showAlert('SOS Alert! Opening SMS...', 5000); sendSOSSms(formatLocationUrl(pos)); }
+      },
+      err => {
+        if (!sosSmsSent) {
+          sosSmsSent = true;
+          showAlert(err.code === 1 ? 'Location permission denied — sending SOS without location.' : 'SOS Alert! Sending without location...', 6000);
+          sendSOSSms(null);
+        }
+        if (sosWatchId !== null) { navigator.geolocation.clearWatch(sosWatchId); sosWatchId = null; }
+      },
       { enableHighAccuracy: true, timeout: 10000 }
     );
+    // Keep tracking location for a few minutes after an SOS in case a fresher fix is needed for a re-share.
+    setTimeout(() => { if (sosWatchId !== null) { navigator.geolocation.clearWatch(sosWatchId); sosWatchId = null; } }, 5 * 60 * 1000);
   } else sendSOSSms(null);
   setTimeout(() => { sosRingFill.classList.add('draining'); updateRing(0); setTimeout(() => sosRingFill.classList.remove('draining'), 800); }, 1200);
 }
@@ -2694,6 +2713,20 @@ function startCheckin(resumeSeconds) {
     logEvent('checkin', `Started ${dur}min check-in`);
   }
   checkinRunning = true;
+  checkinLastPosition = null; checkinGeoErrorShown = false;
+  if (navigator.geolocation) {
+    if (checkinWatchId !== null) navigator.geolocation.clearWatch(checkinWatchId);
+    checkinWatchId = navigator.geolocation.watchPosition(
+      pos => { checkinLastPosition = pos; },
+      err => {
+        if (!checkinGeoErrorShown) {
+          checkinGeoErrorShown = true;
+          showToast(err.code === 1 ? 'Location permission denied — check-in alerts will send without location.' : 'Location unavailable for check-in.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+  }
   const display = document.getElementById('checkinTimeDisplay');
   display.textContent = formatTime(checkinSecondsLeft);
   display.classList.add('running'); display.classList.remove('expired','warning');
@@ -2741,10 +2774,11 @@ function startCheckin(resumeSeconds) {
       const targets = emergency.length > 0 ? emergency : contacts;
       if (targets.length > 0) {
         const phones = targets.map(c => c.phone).join(',');
-        if (navigator.geolocation) {
+        if (checkinLastPosition) {
+          window.open(`sms:${phones}?&body=${encodeURIComponent("I haven't checked in on SafeHer. My last location: " + formatLocationUrl(checkinLastPosition))}`, '_self');
+        } else if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(pos => {
-            const url = `https://maps.google.com/maps?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
-            window.open(`sms:${phones}?&body=${encodeURIComponent("I haven't checked in on SafeHer. My last location: " + url)}`, '_self');
+            window.open(`sms:${phones}?&body=${encodeURIComponent("I haven't checked in on SafeHer. My last location: " + formatLocationUrl(pos))}`, '_self');
           }, () => {
             window.open(`sms:${phones}?&body=${encodeURIComponent("I haven't checked in on SafeHer. Please check on me.")}`, '_self');
           }, { timeout: 5000 });
@@ -2758,6 +2792,7 @@ function startCheckin(resumeSeconds) {
 function stopCheckin(safe) {
   clearInterval(checkinTimerInterval); checkinTimerInterval = null;
   checkinRunning = false;
+  if (checkinWatchId !== null) { navigator.geolocation.clearWatch(checkinWatchId); checkinWatchId = null; }
   localStorage.removeItem('safeher-checkin');
   const display = document.getElementById('checkinTimeDisplay');
   display.textContent = '00:00'; display.classList.remove('running','expired','warning');
