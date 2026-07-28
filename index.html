@@ -2366,10 +2366,18 @@ body.light-theme .settings-panel { background: #f5f3ff; }
     <div class="onboard-title">Add Trusted Contacts</div>
     <div class="onboard-desc">Add people you trust. Star them as emergency contacts to receive SOS alerts and check-in notifications.</div>
   </div>
+  <div class="onboard-step" id="onboardStep3">
+    <div class="onboard-icon teal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    </div>
+    <div class="onboard-title">Enable Location Access</div>
+    <div class="onboard-desc">Grant location access now so SOS alerts and check-ins can include your exact position instantly — no delay when it matters most.</div>
+  </div>
   <div class="onboard-dots">
     <div class="onboard-dot active" id="onboardDot0"></div>
     <div class="onboard-dot" id="onboardDot1"></div>
     <div class="onboard-dot" id="onboardDot2"></div>
+    <div class="onboard-dot" id="onboardDot3"></div>
   </div>
   <div class="onboard-actions">
     <button class="onboard-skip" onclick="finishOnboarding()">Skip</button>
@@ -3221,13 +3229,22 @@ document.getElementById('newContactPhone').addEventListener('focus', function(){
 // ═══════════════════════════════════════════════════════════
 let onboardStep = 0;
 function nextOnboardStep() {
+  if (onboardStep === 3) { requestOnboardingLocation(); return; }
   onboardStep++;
-  if (onboardStep > 2) { finishOnboarding(); return; }
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     document.getElementById('onboardStep'+i).classList.toggle('active', i === onboardStep);
     document.getElementById('onboardDot'+i).classList.toggle('active', i === onboardStep);
   }
-  if (onboardStep === 2) document.getElementById('onboardNext').textContent = 'Get Started';
+  document.getElementById('onboardNext').textContent = onboardStep === 3 ? 'Enable Location' : 'Next';
+}
+function requestOnboardingLocation() {
+  if (!navigator.geolocation) { finishOnboarding(); return; }
+  document.getElementById('onboardNext').textContent = 'Requesting…';
+  navigator.geolocation.getCurrentPosition(
+    () => { showToast('Location enabled — SOS alerts will include it instantly'); finishOnboarding(); },
+    () => { showToast('Location permission denied — you can enable it later in Settings'); finishOnboarding(); },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
 }
 function finishOnboarding() {
   localStorage.setItem('safeher-onboarded', 'true');
