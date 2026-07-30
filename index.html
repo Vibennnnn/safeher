@@ -2052,23 +2052,23 @@ body.light-theme .settings-panel { background: #f5f3ff; }
       <div class="card-title">Caller Name</div>
       <input class="caller-input" id="callerNameInput" type="text" placeholder="e.g. Mom, Alex, Dr. Smith" maxlength="40">
       <div class="preset-grid">
-        <button class="preset-btn" onclick="setPreset('Mom')">Mom</button>
-        <button class="preset-btn" onclick="setPreset('Dad')">Dad</button>
-        <button class="preset-btn" onclick="setPreset('Best Friend')">Best Friend</button>
-        <button class="preset-btn" onclick="setPreset('Work')">Work</button>
-        <button class="preset-btn" onclick="setPreset('Doctor')">Doctor</button>
-        <button class="preset-btn" onclick="setPreset('Roommate')">Roommate</button>
+        <button class="preset-btn" onclick="setPreset('Mom')" aria-pressed="false">Mom</button>
+        <button class="preset-btn" onclick="setPreset('Dad')" aria-pressed="false">Dad</button>
+        <button class="preset-btn" onclick="setPreset('Best Friend')" aria-pressed="false">Best Friend</button>
+        <button class="preset-btn" onclick="setPreset('Work')" aria-pressed="false">Work</button>
+        <button class="preset-btn" onclick="setPreset('Doctor')" aria-pressed="false">Doctor</button>
+        <button class="preset-btn" onclick="setPreset('Roommate')" aria-pressed="false">Roommate</button>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">Call Delay</div>
       <div class="delay-options">
-        <button class="delay-btn selected" onclick="setCallDelay(0)">Now</button>
-        <button class="delay-btn" onclick="setCallDelay(5)">5 sec</button>
-        <button class="delay-btn" onclick="setCallDelay(15)">15 sec</button>
-        <button class="delay-btn" onclick="setCallDelay(30)">30 sec</button>
-        <button class="delay-btn" onclick="setCallDelay(60)">1 min</button>
+        <button class="delay-btn selected" onclick="setCallDelay(0)" aria-pressed="true">Now</button>
+        <button class="delay-btn" onclick="setCallDelay(5)" aria-pressed="false">5 sec</button>
+        <button class="delay-btn" onclick="setCallDelay(15)" aria-pressed="false">15 sec</button>
+        <button class="delay-btn" onclick="setCallDelay(30)" aria-pressed="false">30 sec</button>
+        <button class="delay-btn" onclick="setCallDelay(60)" aria-pressed="false">1 min</button>
       </div>
       <div class="delay-status" id="delayStatus"></div>
       <button class="btn btn-phone-green" id="fakeCallBtn" onclick="startFakeCall()">
@@ -2216,11 +2216,11 @@ body.light-theme .settings-panel { background: #f5f3ff; }
         <div class="accordion-body-inner">
           <div class="safety-check-text">How safe do you feel right now?</div>
           <div class="safety-level-grid">
-            <button class="safety-level-btn" data-level="1" onclick="setSafetyLevel(1)">Unsafe</button>
-            <button class="safety-level-btn" data-level="2" onclick="setSafetyLevel(2)">Uneasy</button>
-            <button class="safety-level-btn" data-level="3" onclick="setSafetyLevel(3)">Okay</button>
-            <button class="safety-level-btn" data-level="4" onclick="setSafetyLevel(4)">Safe</button>
-            <button class="safety-level-btn" data-level="5" onclick="setSafetyLevel(5)">Great</button>
+            <button class="safety-level-btn" data-level="1" onclick="setSafetyLevel(1)" aria-pressed="false">Unsafe</button>
+            <button class="safety-level-btn" data-level="2" onclick="setSafetyLevel(2)" aria-pressed="false">Uneasy</button>
+            <button class="safety-level-btn" data-level="3" onclick="setSafetyLevel(3)" aria-pressed="false">Okay</button>
+            <button class="safety-level-btn" data-level="4" onclick="setSafetyLevel(4)" aria-pressed="false">Safe</button>
+            <button class="safety-level-btn" data-level="5" onclick="setSafetyLevel(5)" aria-pressed="false">Great</button>
           </div>
           <div class="safety-response" id="safetyResponse"></div>
         </div>
@@ -2829,8 +2829,9 @@ function stopCheckin(safe) {
 //  FAKE CALL
 // ═══════════════════════════════════════════════════════════
 function setPreset(name) {
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.preset-btn').forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); });
   event.target.classList.add('selected');
+  event.target.setAttribute('aria-pressed', 'true');
   document.getElementById('callerNameInput').value = name;
 }
 function startFakeCall() {
@@ -2989,7 +2990,7 @@ function importContacts(event) {
 // ═══════════════════════════════════════════════════════════
 //  CALL DELAY / SHARE LOCATION / TOAST
 // ═══════════════════════════════════════════════════════════
-function setCallDelay(seconds) { callDelay=seconds; document.querySelectorAll('.delay-btn').forEach(b=>b.classList.remove('selected')); event.target.classList.add('selected'); document.getElementById('delayStatus').textContent=''; }
+function setCallDelay(seconds) { callDelay=seconds; document.querySelectorAll('.delay-btn').forEach(b=>{ b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); }); event.target.classList.add('selected'); event.target.setAttribute('aria-pressed', 'true'); document.getElementById('delayStatus').textContent=''; }
 function shareLocation() {
   if (!navigator.geolocation) { showToast('Location not available'); return; }
   showToast('Getting your location...');
@@ -3020,8 +3021,10 @@ function showUndoToast(msg, callback) {
 // ═══════════════════════════════════════════════════════════
 const safetyResponses = ['','Consider leaving. Use SOS or call someone you trust.','Stay alert. Share your location and keep your phone ready.','','Great! Keep staying aware.','Wonderful! Enjoy your time.'];
 function setSafetyLevel(val) {
-  document.querySelectorAll('.safety-level-btn').forEach(b => b.classList.remove('selected'));
-  document.querySelector(`.safety-level-btn[data-level="${val}"]`).classList.add('selected');
+  document.querySelectorAll('.safety-level-btn').forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); });
+  const selectedBtn = document.querySelector(`.safety-level-btn[data-level="${val}"]`);
+  selectedBtn.classList.add('selected');
+  selectedBtn.setAttribute('aria-pressed', 'true');
   const resp = document.getElementById('safetyResponse');
   resp.textContent = safetyResponses[val];
   if (val <= 2) resp.style.color = '#FF453A';
