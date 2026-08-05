@@ -2058,7 +2058,7 @@ body.light-theme .settings-panel { background: #f5f3ff; }
 
     <div class="card">
       <div class="card-title">Caller Name</div>
-      <input class="caller-input" id="callerNameInput" type="text" placeholder="e.g. Mom, Alex, Dr. Smith" maxlength="40">
+      <input class="caller-input" id="callerNameInput" type="text" placeholder="e.g. Mom, Alex, Dr. Smith" aria-label="Caller name" maxlength="40">
       <div class="preset-grid">
         <button class="preset-btn" onclick="setPreset('Mom')" aria-pressed="false">Mom</button>
         <button class="preset-btn" onclick="setPreset('Dad')" aria-pressed="false">Dad</button>
@@ -2108,8 +2108,8 @@ body.light-theme .settings-panel { background: #f5f3ff; }
     <div class="card">
       <div class="card-title">Add New Contact</div>
       <div class="contact-form-row">
-        <input class="form-input" id="newContactName"  type="text"  placeholder="Contact name"   maxlength="50">
-        <input class="form-input" id="newContactPhone" type="tel"   placeholder="Phone number"   maxlength="20">
+        <input class="form-input" id="newContactName"  type="text"  placeholder="Contact name"   aria-label="Contact name"  maxlength="50">
+        <input class="form-input" id="newContactPhone" type="tel"   placeholder="Phone number"   aria-label="Phone number"  maxlength="20">
       </div>
       <button class="btn btn-purple" onclick="addContact()">Add Contact</button>
     </div>
