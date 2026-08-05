@@ -1,4 +1,4 @@
-const CACHE = 'safeher-v15';
+const CACHE = 'safeher-v16';
 const FILES = ['./', './index.html', './manifest.json', './reflection.m4a'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))));
