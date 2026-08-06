@@ -1814,7 +1814,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 }
 
 /* ── Focus Visible ───────────────────────────────────────── */
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, .accordion-header:focus-visible {
   outline: 2px solid var(--accent-teal);
   outline-offset: 2px;
 }
@@ -2136,7 +2136,7 @@ body.light-theme .settings-panel { background: #f5f3ff; }
 
     <!-- Emergency Hotlines Accordion -->
     <div class="accordion-section" id="accordionHotlines">
-      <div class="accordion-header expanded" onclick="toggleAccordion('hotlines')">
+      <div class="accordion-header expanded" onclick="toggleAccordion('hotlines')" onkeydown="accordionKeydown(event,'hotlines')" role="button" tabindex="0" aria-expanded="true" aria-controls="bodyHotlines">
         <div class="accordion-header-left">
           <div class="accordion-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
           Emergency Hotlines
@@ -2182,7 +2182,7 @@ body.light-theme .settings-panel { background: #f5f3ff; }
 
     <!-- Safety Tips Accordion -->
     <div class="accordion-section" id="accordionTips">
-      <div class="accordion-header" onclick="toggleAccordion('tips')">
+      <div class="accordion-header" onclick="toggleAccordion('tips')" onkeydown="accordionKeydown(event,'tips')" role="button" tabindex="0" aria-expanded="false" aria-controls="bodyTips">
         <div class="accordion-header-left">
           <div class="accordion-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 019 14"/></svg></div>
           Safety Tips
@@ -2213,7 +2213,7 @@ body.light-theme .settings-panel { background: #f5f3ff; }
 
     <!-- Safety Check Accordion -->
     <div class="accordion-section" id="accordionCheck">
-      <div class="accordion-header" onclick="toggleAccordion('check')">
+      <div class="accordion-header" onclick="toggleAccordion('check')" onkeydown="accordionKeydown(event,'check')" role="button" tabindex="0" aria-expanded="false" aria-controls="bodyCheck">
         <div class="accordion-header-left">
           <div class="accordion-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
           Quick Safety Check
@@ -2237,7 +2237,7 @@ body.light-theme .settings-panel { background: #f5f3ff; }
 
     <!-- Breathing Exercise Accordion -->
     <div class="accordion-section" id="accordionBreathe">
-      <div class="accordion-header" onclick="toggleAccordion('breathe')">
+      <div class="accordion-header" onclick="toggleAccordion('breathe')" onkeydown="accordionKeydown(event,'breathe')" role="button" tabindex="0" aria-expanded="false" aria-controls="bodyBreathe">
         <div class="accordion-header-left">
           <div class="accordion-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1111 8H2"/><path d="M12.59 19.41A2 2 0 1014 16H2"/><path d="M17.73 7.73A2.5 2.5 0 1119.5 12H2"/></svg></div>
           Breathing Exercise
@@ -3050,7 +3050,14 @@ function toggleAccordion(id) {
   const chevron = document.getElementById('chevron' + id.charAt(0).toUpperCase() + id.slice(1));
   const expanded = body.classList.toggle('expanded');
   header.classList.toggle('expanded', expanded);
+  header.setAttribute('aria-expanded', expanded);
   chevron.classList.toggle('rotated', expanded);
+}
+function accordionKeydown(e, id) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    toggleAccordion(id);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
