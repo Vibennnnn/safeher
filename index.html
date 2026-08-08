@@ -1814,7 +1814,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 }
 
 /* ── Focus Visible ───────────────────────────────────────── */
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, .accordion-header:focus-visible {
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, .accordion-header:focus-visible, .settings-link:focus-visible {
   outline: 2px solid var(--accent-teal);
   outline-offset: 2px;
 }
@@ -2341,7 +2341,7 @@ body.light-theme .settings-panel { background: #f5f3ff; }
       </div>
       <button class="toggle-switch" id="shakeToggleSwitch" onclick="toggleShakeSOS()" role="switch" aria-checked="false" aria-label="Shake-to-SOS"></button>
     </div>
-    <div class="settings-link" onclick="switchTab('resources');toggleSettings();">
+    <div class="settings-link" onclick="openResourcesFromSettings()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openResourcesFromSettings()}" role="button" tabindex="0">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
       Resources & Hotlines
     </div>
@@ -3120,6 +3120,10 @@ document.getElementById('dailyTip').textContent = TIPS[new Date().getDay() % TIP
 function toggleSettings() {
   document.getElementById('settingsOverlay').classList.toggle('active');
   document.getElementById('settingsPanel').classList.toggle('active');
+}
+function openResourcesFromSettings() {
+  switchTab('resources');
+  toggleSettings();
 }
 
 // ═══════════════════════════════════════════════════════════
