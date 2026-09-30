@@ -350,7 +350,7 @@ body::before {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: rgba(255,59,107,0.6);
+  color: var(--accent-red);
   text-transform: uppercase;
   opacity: 0;
   animation: holdLabelFade 0.5s ease 1s forwards;
@@ -1861,6 +1861,31 @@ body.light-theme {
   --shadow-soft: 0 2px 12px rgba(0,0,0,0.04);
   background: linear-gradient(135deg, #f0ecff 0%, #e8e4f8 50%, #f5f3ff 100%) !important;
 }
+
+/* ── Light theme legibility ─────────────────────────────────
+   Many rules were written for dark mode with white text or pale
+   accents baked in. Darker light-mode shades bring every text item
+   to WCAG AA (checked with an automated contrast audit). */
+body.light-theme {
+  --text-secondary: rgba(26,26,46,0.7);
+  --accent-teal-bright: #00766a;
+  --accent-purple-lighter: #6532c9;
+  --accent-purple-pale: #5a2db8;
+}
+body.light-theme .contact-name,
+body.light-theme .resource-title { color: var(--text-primary); }
+body.light-theme .contact-phone,
+body.light-theme .resource-detail { color: var(--text-secondary); }
+body.light-theme .gradient-border-inner { background: var(--bg-card-solid); }
+body.light-theme .bottom-nav { background: rgba(255,255,255,0.86); border-top-color: rgba(108,63,197,0.12); }
+body.light-theme .sos-hold-label { color: var(--accent-red-dark); }
+body.light-theme .emergency-badge { color: #7a5c00; }
+body.light-theme .checkin-time { color: var(--accent-teal-bright); }
+body.light-theme .checkin-time.warning { color: #b45309; }
+body.light-theme .safety-level-btn[data-level="1"].selected { color: #c4221a; }
+body.light-theme .safety-level-btn[data-level="2"].selected { color: #a85b00; }
+body.light-theme .safety-level-btn[data-level="3"].selected { color: #7a6400; }
+body.light-theme .safety-level-btn[data-level="4"].selected { color: #1a7f37; }
 body.light-theme .header-title {
   background: linear-gradient(135deg, var(--accent-purple), var(--accent-teal));
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
