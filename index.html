@@ -1941,6 +1941,13 @@ body.light-theme .settings-panel { background: #f5f3ff; }
   }
 }
 
+/* ── Tap targets: 44px minimum, same bar the earlier a11y fixes set ── */
+.resource-call-btn { width: 44px; height: 44px; }
+.safety-level-btn { min-height: 44px; }
+/* Small pills keep their look but get an invisible 44px-tall hit area. */
+.ready-chip, .shake-toggle, .breathe-toggle { position: relative; }
+.ready-chip::after, .shake-toggle::after, .breathe-toggle::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 44px; transform: translateY(-50%); }
+
 /* ── Scroll performance ─────────────────────────────────────
    These sit on a smooth gradient, so a live blur behind them changes
    nothing you can see but costs every scroll frame on a phone. Blur
@@ -2566,7 +2573,7 @@ let checkinWatchId = null, checkinLastPosition = null, checkinGeoErrorShown = fa
 let checkinDeadline = 0;
 const PHONE_RE = /^\+?\d{7,15}$/;
 const POS_FRESH_MS = 5 * 60 * 1000;
-let lastPosition = null, idleWatchId = null, pendingSmsUri = null, sosFiredThisHold = false;
+let lastPosition = null, idleWatchId = null, pendingSmsUri = null, sosFiredThisHold = false, sendPanelReturnFocus = null;
 const CHECKIN_CIRCUMFERENCE = 2 * Math.PI * 88;
 
 let callTimerInterval = null, callElapsed = 0, callAnswered = false, callAutoEnd = null;
@@ -2687,7 +2694,14 @@ function openSendPanel(kicker, title, body, uri, count) {
   document.getElementById('sendLoc').classList.remove('show');
   const sms = document.getElementById('sendSmsBtn'); sms.href = uri; sms.hidden = false;
   document.getElementById('sendContactsBtn').hidden = true;
-  document.getElementById('sendPanel').classList.add('show');
+  showSendPanelEl();
+}
+function showSendPanelEl() {
+  const panel = document.getElementById('sendPanel');
+  if (!panel.classList.contains('show')) sendPanelReturnFocus = document.activeElement;
+  panel.classList.add('show');
+  const first = [...panel.querySelectorAll('.send-actions a, .send-actions button')].find(e => !e.hidden);
+  if (first) first.focus({ preventScroll: true });
 }
 function showNoContactsPanel(kicker) {
   document.getElementById('sendKicker').textContent = kicker;
@@ -2697,7 +2711,7 @@ function showNoContactsPanel(kicker) {
   document.getElementById('sendLoc').classList.remove('show');
   document.getElementById('sendSmsBtn').hidden = true;
   document.getElementById('sendContactsBtn').hidden = false;
-  document.getElementById('sendPanel').classList.add('show');
+  showSendPanelEl();
 }
 // A location fix arrived after the panel opened without one: put it in the text.
 function addLocationToPanel(body) {
@@ -2710,7 +2724,12 @@ function addLocationToPanel(body) {
   document.getElementById('sendLoc').classList.add('show');
   pendingSmsUri = null;
 }
-function closeSendPanel() { document.getElementById('sendPanel').classList.remove('show'); pendingSmsUri = null; }
+function closeSendPanel() {
+  document.getElementById('sendPanel').classList.remove('show'); pendingSmsUri = null;
+  if (sendPanelReturnFocus && sendPanelReturnFocus.focus) sendPanelReturnFocus.focus({ preventScroll: true });
+  sendPanelReturnFocus = null;
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('sendPanel').classList.contains('show')) closeSendPanel(); });
 
 // ═══════════════════════════════════════════════════════════
 //  ACTIVITY LOG
