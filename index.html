@@ -300,7 +300,9 @@ body::before {
 /* ── SOS FAB (Global) ────────────────────────────────────── */
 .sos-fab-wrap {
   position: fixed;
-  bottom: max(56px, calc(56px + env(safe-area-inset-bottom)));
+  /* Docked into the nav's center slot so it stops covering content;
+     the hold label lines up with the nav labels. */
+  bottom: max(10px, env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   z-index: 210;
@@ -671,6 +673,17 @@ body::before {
   color: var(--accent-teal-bright);
   transition: color 0.3s;
 }
+.ready-row { display: flex; gap: 8px; margin-top: 12px; margin-bottom: 14px; flex-wrap: wrap; justify-content: center; }
+.ready-chip { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 14px; border-radius: var(--radius-pill); border: 1px solid var(--border-light); background: var(--bg-card); color: var(--text-secondary); font: 600 12.5px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.15s var(--spring); touch-action: manipulation; }
+.ready-chip:active { transform: scale(0.96); }
+.ready-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-hint); flex: none; transition: background 0.25s, box-shadow 0.25s; }
+.ready-chip.ok { color: var(--text-primary); border-color: rgba(0,191,166,0.35); }
+.ready-chip.ok .ready-dot { background: var(--accent-teal); box-shadow: 0 0 0 3px var(--accent-teal-light); animation: readyPulse 2.4s ease-in-out infinite; }
+.ready-chip.warn { color: var(--text-primary); border-color: var(--accent-yellow-border); background: var(--accent-yellow-subtle); }
+.ready-chip.warn .ready-dot { background: var(--accent-yellow); }
+body.light-theme .ready-chip.warn .ready-dot { background: #b58900; }
+@keyframes readyPulse { 0%,100% { box-shadow: 0 0 0 3px var(--accent-teal-light); } 50% { box-shadow: 0 0 0 6px rgba(0,191,166,0.05); } }
+@media (prefers-reduced-motion: reduce) { .ready-chip.ok .ready-dot { animation: none; } }
 .status-subtext {
   font-size: 12px;
   color: var(--text-faint);
@@ -1216,9 +1229,13 @@ body::before {
 
 /* ── Contacts Tab ────────────────────────────────────────── */
 .contact-card {
-  display: flex;
+  /* Info gets the full top line; actions get their own row, so names stop truncating. */
+  display: grid;
+  grid-template-columns: 44px 52px minmax(0, 1fr);
+  grid-template-areas: "star avatar info" "actions actions actions";
   align-items: center;
-  gap: 14px;
+  column-gap: 12px;
+  row-gap: 12px;
   background: var(--bg-card);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: var(--radius-lg);
@@ -1246,7 +1263,12 @@ body::before {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .contact-phone { font-size: 12px; color: rgba(232,224,255,0.55); margin-top: 2px; }
-.contact-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.contact-actions { grid-area: actions; display: flex; gap: 8px; }
+.contact-actions .contact-action-btn { flex: 1; width: auto; }
+.contact-actions .contact-delete { flex: 0 0 52px; }
+.contact-star { grid-area: star; }
+.contact-avatar { grid-area: avatar; }
+.contact-info { grid-area: info; }
 .contact-action-btn {
   width: 44px; height: 44px;
   border-radius: var(--radius-sm);
@@ -1881,6 +1903,9 @@ body.light-theme .bottom-nav { background: rgba(255,255,255,0.86); border-top-co
 body.light-theme .sos-hold-label { color: var(--accent-red-dark); }
 body.light-theme .emergency-badge { color: #7a5c00; }
 body.light-theme .checkin-time { color: var(--accent-teal-bright); }
+body.light-theme .header-sub.timer-active { color: var(--accent-teal-bright); }
+body.light-theme .send-kicker { color: var(--accent-red-dark); }
+.onboard-next { background: #007a6d !important; } /* white text on the old bright teal was 2.3:1 */
 body.light-theme .checkin-time.warning { color: #b45309; }
 body.light-theme .safety-level-btn[data-level="1"].selected { color: #c4221a; }
 body.light-theme .safety-level-btn[data-level="2"].selected { color: #a85b00; }
@@ -1966,7 +1991,11 @@ body.light-theme .settings-panel { background: #f5f3ff; }
         </div>
       </div>
       <div class="status-text" id="statusText">All clear</div>
-      <div class="status-subtext" id="statusSubtext">You're protected</div>
+      <div class="status-subtext" id="statusSubtext">Checking your setup…</div>
+      <div class="ready-row" aria-live="polite">
+        <button class="ready-chip" id="readyLoc" type="button" onclick="readyLocTap()"><span class="ready-dot"></span><span id="readyLocText">Location</span></button>
+        <button class="ready-chip" id="readyContacts" type="button" onclick="switchTab('contacts')"><span class="ready-dot"></span><span id="readyContactsText">Contacts</span></button>
+      </div>
     </div>
 
     <!-- Quick Actions -->
@@ -2570,7 +2599,7 @@ function formatLocationUrl(pos) {
 //  LOCATION CACHE — SOS never waits on GPS
 // ═══════════════════════════════════════════════════════════
 function cleanPhone(p) { return String(p).replace(/[\s\-\(\)\.]/g, ''); }
-function rememberPosition(pos) { if (!lastPosition || pos.timestamp >= lastPosition.timestamp) lastPosition = pos; }
+function rememberPosition(pos) { if (!lastPosition || pos.timestamp >= lastPosition.timestamp) { lastPosition = pos; if (typeof renderReadiness === 'function') renderReadiness(); } }
 function freshPosition() { return lastPosition && Date.now() - lastPosition.timestamp < POS_FRESH_MS ? lastPosition : null; }
 // Only runs once location is already granted, so it never pops a prompt by itself.
 function startIdleWatch() {
@@ -2581,9 +2610,41 @@ function stopIdleWatch() { if (idleWatchId !== null) { navigator.geolocation.cle
 function syncIdleWatch() {
   if (!navigator.permissions || !navigator.geolocation) return;
   navigator.permissions.query({ name: 'geolocation' }).then(s => {
-    const apply = () => (s.state === 'granted' && document.visibilityState === 'visible') ? startIdleWatch() : stopIdleWatch();
+    const apply = () => { geoPermState = s.state; renderReadiness(); (s.state === 'granted' && document.visibilityState === 'visible') ? startIdleWatch() : stopIdleWatch(); };
     apply(); s.onchange = apply;
   }).catch(() => {});
+}
+
+// ═══════════════════════════════════════════════════════════
+//  READINESS — what SOS will actually do right now
+// ═══════════════════════════════════════════════════════════
+let geoPermState = 'unknown';
+function setChip(id, textId, state, text) {
+  const el = document.getElementById(id); if (!el) return;
+  el.classList.toggle('ok', state === 'ok'); el.classList.toggle('warn', state === 'warn');
+  document.getElementById(textId).textContent = text;
+}
+function renderReadiness() {
+  const pos = freshPosition();
+  let locOk = false;
+  if (pos) { locOk = true; setChip('readyLoc', 'readyLocText', 'ok', `Location ready · ±${Math.max(1, Math.round(pos.coords.accuracy || 0))} m`); }
+  else if (geoPermState === 'denied') setChip('readyLoc', 'readyLocText', 'warn', 'Location blocked');
+  else if (geoPermState === 'granted') setChip('readyLoc', 'readyLocText', '', 'Finding location…');
+  else setChip('readyLoc', 'readyLocText', 'warn', 'Turn on location');
+  const contacts = loadContacts();
+  const phones = alertPhones();
+  const emergency = contacts.filter(c => c.emergency && PHONE_RE.test(cleanPhone(c.phone)));
+  if (!phones.length) setChip('readyContacts', 'readyContactsText', 'warn', 'Add an SOS contact');
+  else if (emergency.length === 1) setChip('readyContacts', 'readyContactsText', 'ok', `SOS texts ${emergency[0].name}`);
+  else setChip('readyContacts', 'readyContactsText', 'ok', `SOS texts ${phones.length} people`);
+  const sub = document.getElementById('statusSubtext');
+  if (sub && document.getElementById('statusText').textContent === 'All clear') sub.textContent = (locOk && phones.length) ? 'Ready if you need it' : 'Finish setup below';
+}
+function readyLocTap() {
+  if (freshPosition()) { shareLocation(); return; }
+  if (geoPermState === 'denied') { showToast('Location is blocked. Turn it on for this site in your browser settings.', 5000); return; }
+  if (!navigator.geolocation) { showToast('Location not available'); return; }
+  navigator.geolocation.getCurrentPosition(p => { rememberPosition(p); syncIdleWatch(); }, handleGeoError, { enableHighAccuracy: true, timeout: 15000 });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2821,7 +2882,8 @@ function updateStatusHero(state, extra) {
   if (state === 'safe') {
     text.textContent = 'All clear';
     text.style.color = '';
-    sub.textContent = "You're protected";
+    sub.textContent = '';
+    renderReadiness();
     ring.style.strokeDashoffset = '0';
     headerSub.textContent = 'Your Safety Companion';
   } else if (state === 'timer') {
@@ -2875,7 +2937,7 @@ function startCheckin(resumeSeconds) {
       err => {
         if (!checkinGeoErrorShown) {
           checkinGeoErrorShown = true;
-          showToast(err.code === 1 ? 'Location permission denied — check-in alerts will send without location.' : 'Location unavailable for check-in.');
+          showToast(err.code === 1 ? 'Location is off, so check-in texts won\'t include where you are.' : 'Location unavailable for check-in.');
         }
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
@@ -3056,7 +3118,7 @@ function endCall() {
 //  CONTACTS
 // ═══════════════════════════════════════════════════════════
 function loadContacts() { try { return JSON.parse(localStorage.getItem(CONTACTS_KEY)) || []; } catch { return []; } }
-function saveContacts(contacts) { localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts)); }
+function saveContacts(contacts) { localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts)); renderReadiness(); }
 function renderContacts() {
   const contacts = loadContacts();
   const container = document.getElementById('contactsList');
@@ -3432,7 +3494,7 @@ function requestOnboardingLocation() {
   if (!navigator.geolocation) { finishOnboarding(); return; }
   document.getElementById('onboardNext').textContent = 'Requesting…';
   navigator.geolocation.getCurrentPosition(
-    () => { showToast('Location enabled — SOS alerts will include it instantly'); finishOnboarding(); },
+    () => { showToast('Location on. Your SOS texts will include it.'); finishOnboarding(); },
     () => { showToast('Location permission denied — you can enable it later in Settings'); finishOnboarding(); },
     { enableHighAccuracy: true, timeout: 10000 }
   );
@@ -3490,6 +3552,8 @@ document.addEventListener('visibilitychange', () => {
   else { syncIdleWatch(); checkinTick(); }
 });
 syncIdleWatch();
+renderReadiness();
+setInterval(renderReadiness, 30000); // a fix goes stale after 5 min; keep the chip honest
 
 // Service Worker
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
