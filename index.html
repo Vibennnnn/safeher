@@ -216,8 +216,8 @@ body::before {
   overflow-y: auto;
   padding: 24px 20px 140px;
 }
-.tab-content.active { display: block; animation: tabEnter 0.35s var(--ease-out-expo); }
-.tab-content.tab-exiting { display: block; animation: tabExit 0.2s ease forwards; }
+.tab-content.active { display: block; animation: tabEnter 0.3s var(--ease-out-expo); }
+.tab-content.tab-exiting { display: block; animation: tabExit 0.12s ease forwards; }
 @keyframes tabEnter {
   from { opacity: 0; transform: translateY(20px) scale(0.98); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
@@ -1819,13 +1819,13 @@ body.light-theme .ready-chip.warn .ready-dot { background: #b58900; }
   animation: cardSpringIn 0.4s var(--ease-out-expo) both;
 }
 .tab-content.active > :nth-child(1) { animation-delay: 0ms; }
-.tab-content.active > :nth-child(2) { animation-delay: 60ms; }
-.tab-content.active > :nth-child(3) { animation-delay: 120ms; }
-.tab-content.active > :nth-child(4) { animation-delay: 180ms; }
-.tab-content.active > :nth-child(5) { animation-delay: 240ms; }
-.tab-content.active > :nth-child(6) { animation-delay: 300ms; }
-.tab-content.active > :nth-child(7) { animation-delay: 360ms; }
-.tab-content.active > :nth-child(8) { animation-delay: 420ms; }
+.tab-content.active > :nth-child(2) { animation-delay: 35ms; }
+.tab-content.active > :nth-child(3) { animation-delay: 70ms; }
+.tab-content.active > :nth-child(4) { animation-delay: 105ms; }
+.tab-content.active > :nth-child(5) { animation-delay: 140ms; }
+.tab-content.active > :nth-child(6) { animation-delay: 175ms; }
+.tab-content.active > :nth-child(7) { animation-delay: 210ms; }
+.tab-content.active > :nth-child(8) { animation-delay: 245ms; }
 
 /* ── Misc ────────────────────────────────────────────────── */
 input[type="number"]::-webkit-inner-spin-button,
@@ -1939,6 +1939,17 @@ body.light-theme .settings-panel { background: #f5f3ff; }
     border-left: 1px solid var(--border-subtle);
     border-right: 1px solid var(--border-subtle);
   }
+}
+
+/* ── Scroll performance ─────────────────────────────────────
+   These sit on a smooth gradient, so a live blur behind them changes
+   nothing you can see but costs every scroll frame on a phone. Blur
+   stays on layers that float over scrolling content (header, nav,
+   toast, overlays). */
+.card, .gradient-border-inner, .card-hero, .quick-btn, .pill-icon-circle,
+.contact-card, .form-input, .accordion-header, .accordion-body {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 /* ── Reduced Motion ──────────────────────────────────────── */
@@ -2770,7 +2781,7 @@ function switchTab(name) {
     currentTab = name;
     if (name === 'contacts') renderContacts();
     if (name === 'home') renderActivityLog();
-  }, 180);
+  }, 110);
 }
 
 // ═══════════════════════════════════════════════════════════
