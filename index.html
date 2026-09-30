@@ -1820,6 +1820,24 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* ── Light Theme ─────────────────────────────────────────── */
+/* ── Send panel: the tappable backup for every SMS handoff ── */
+.send-panel { position: fixed; inset: 0; z-index: 9000; display: none; align-items: flex-end; justify-content: center; background: rgba(4,2,12,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 16px; padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+.send-panel.show { display: flex; animation: sendFade 0.2s ease; }
+.send-sheet { width: 100%; max-width: 440px; background: var(--bg-card-solid); border: 1px solid var(--accent-red-border); border-radius: var(--radius-xl); box-shadow: 0 -8px 40px rgba(0,0,0,0.45); padding: 22px 20px 18px; display: flex; flex-direction: column; gap: 12px; animation: sendRise 0.32s var(--ease-out-expo); }
+.send-kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-red); }
+.send-title { font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1.25; }
+.send-note { font-size: 14px; color: var(--text-muted); line-height: 1.45; }
+.send-preview { font-size: 14px; color: var(--text-primary); background: var(--bg-elevated); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px 12px; line-height: 1.45; word-break: break-word; }
+.send-loc { font-size: 13px; font-weight: 600; color: var(--accent-teal-bright); display: none; }
+.send-loc.show { display: block; }
+.send-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.send-actions a, .send-actions button { text-decoration: none; min-height: 50px; }
+.send-panel [hidden] { display: none !important; } /* .btn's display would otherwise beat [hidden] */
+.send-close { background: none; border: none; color: var(--text-muted); font-size: 14px; font-weight: 600; padding: 10px; cursor: pointer; min-height: 44px; }
+@keyframes sendFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sendRise { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .send-panel.show, .send-sheet { animation: none; } }
+
 body.light-theme {
   --bg-primary: #f5f3ff;
   --bg-card: rgba(255,255,255,0.75);
@@ -2022,15 +2040,7 @@ body.light-theme .settings-panel { background: #f5f3ff; }
             <button class="stepper-btn" id="stepperPlus" onclick="stepDuration(1)" aria-label="Increase duration">+</button>
           </div>
           <!-- hidden select keeps existing JS working -->
-          <select class="select-styled" id="checkinDuration" style="display:none;">
-            <option value="5">5 minutes</option>
-            <option value="10" selected>10 minutes</option>
-            <option value="15">15 minutes</option>
-            <option value="30">30 minutes</option>
-            <option value="60">60 minutes</option>
-            <option value="90">90 minutes</option>
-            <option value="120">120 minutes</option>
-          </select>
+          <input type="hidden" id="checkinDuration" value="10">
         </div>
       </div>
       <button class="btn btn-teal" id="checkinBtn" onclick="toggleCheckin()" style="margin-top:14px;">Start Timer</button>
@@ -2042,7 +2052,7 @@ body.light-theme .settings-panel { background: #f5f3ff; }
         <li class="step-item"><div class="step-num">1</div><div class="step-text">Choose how long you expect to be in an unsafe or uncertain situation.</div></li>
         <li class="step-item"><div class="step-num">2</div><div class="step-text">Tap <strong>Start Timer</strong>. The countdown begins automatically.</div></li>
         <li class="step-item"><div class="step-num">3</div><div class="step-text">When you're safe, tap <strong>"I'm Safe"</strong> to cancel the timer.</div></li>
-        <li class="step-item"><div class="step-num">4</div><div class="step-text">If time runs out, an alert is sent to your emergency contacts.</div></li>
+        <li class="step-item"><div class="step-num">4</div><div class="step-text">If time runs out, SafeHer opens a text to your emergency contacts with your last location, ready to send. It can't send texts by itself, so keep SafeHer open.</div></li>
       </ul>
     </div>
 
@@ -2365,7 +2375,7 @@ body.light-theme .settings-panel { background: #f5f3ff; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     </div>
     <div class="onboard-title">SOS in Seconds</div>
-    <div class="onboard-desc">Hold the red SOS button for 2 seconds to alert your emergency contacts with your location. It's always accessible from any screen.</div>
+    <div class="onboard-desc">Hold the red SOS button for 2 seconds. SafeHer opens a text to your emergency contacts with your location, ready to send. It's always accessible from any screen.</div>
   </div>
   <div class="onboard-step" id="onboardStep2">
     <div class="onboard-icon purple">
@@ -2455,6 +2465,22 @@ body.light-theme .settings-panel { background: #f5f3ff; }
   </div>
 </div>
 
+<div class="send-panel" id="sendPanel" role="dialog" aria-modal="true" aria-labelledby="sendTitle">
+  <div class="send-sheet">
+    <div class="send-kicker" id="sendKicker">SOS</div>
+    <div class="send-title" id="sendTitle">Send your SOS text</div>
+    <div class="send-note" id="sendNote">Your messages app should open. If it didn't, tap Send text.</div>
+    <div class="send-preview" id="sendPreview"></div>
+    <div class="send-loc" id="sendLoc" aria-live="polite">Location found. It's in the text now.</div>
+    <div class="send-actions">
+      <a class="btn btn-red" id="sendSmsBtn" href="#">Send text</a>
+      <a class="btn btn-teal" id="sendCallBtn" href="tel:911">Call 911</a>
+      <button class="btn btn-teal" id="sendContactsBtn" type="button" hidden onclick="closeSendPanel(); switchTab('contacts');">Add contacts</button>
+      <button class="send-close" type="button" onclick="closeSendPanel()">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════
 //  GLOBALS
@@ -2472,6 +2498,10 @@ const SOS_CIRCUMFERENCE = 2 * Math.PI * 32; // r=32 for FAB ring
 
 let checkinTimerInterval = null, checkinSecondsLeft = 0, checkinRunning = false, checkinTotalSeconds = 0;
 let checkinWatchId = null, checkinLastPosition = null, checkinGeoErrorShown = false;
+let checkinDeadline = 0;
+const PHONE_RE = /^\+?\d{7,15}$/;
+const POS_FRESH_MS = 5 * 60 * 1000;
+let lastPosition = null, idleWatchId = null, pendingSmsUri = null, sosFiredThisHold = false;
 const CHECKIN_CIRCUMFERENCE = 2 * Math.PI * 88;
 
 let callTimerInterval = null, callElapsed = 0, callAnswered = false, callAutoEnd = null;
@@ -2510,6 +2540,80 @@ function formatLocationUrl(pos) {
   const acc = pos.coords.accuracy ? ` (accuracy ±${Math.round(pos.coords.accuracy)}m)` : '';
   return `https://maps.google.com/maps?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}${acc}`;
 }
+
+// ═══════════════════════════════════════════════════════════
+//  LOCATION CACHE — SOS never waits on GPS
+// ═══════════════════════════════════════════════════════════
+function cleanPhone(p) { return String(p).replace(/[\s\-\(\)\.]/g, ''); }
+function rememberPosition(pos) { if (!lastPosition || pos.timestamp >= lastPosition.timestamp) lastPosition = pos; }
+function freshPosition() { return lastPosition && Date.now() - lastPosition.timestamp < POS_FRESH_MS ? lastPosition : null; }
+// Only runs once location is already granted, so it never pops a prompt by itself.
+function startIdleWatch() {
+  if (idleWatchId !== null || !navigator.geolocation || document.visibilityState !== 'visible') return;
+  idleWatchId = navigator.geolocation.watchPosition(rememberPosition, () => {}, { enableHighAccuracy: false, maximumAge: 60000, timeout: 30000 });
+}
+function stopIdleWatch() { if (idleWatchId !== null) { navigator.geolocation.clearWatch(idleWatchId); idleWatchId = null; } }
+function syncIdleWatch() {
+  if (!navigator.permissions || !navigator.geolocation) return;
+  navigator.permissions.query({ name: 'geolocation' }).then(s => {
+    const apply = () => (s.state === 'granted' && document.visibilityState === 'visible') ? startIdleWatch() : stopIdleWatch();
+    apply(); s.onchange = apply;
+  }).catch(() => {});
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SMS HANDOFF — with a tappable backup every time
+// ═══════════════════════════════════════════════════════════
+function alertPhones() {
+  const contacts = loadContacts();
+  const emergency = contacts.filter(c => c.emergency);
+  const pool = emergency.length ? emergency : contacts;
+  return pool.map(c => cleanPhone(c.phone)).filter(p => PHONE_RE.test(p));
+}
+function smsUri(phones, body) { return `sms:${phones.join(',')}?&body=${encodeURIComponent(body)}`; }
+// A browser can silently block sms: when it isn't opened straight from a tap,
+// so the panel's real link is always there as the guaranteed path.
+function handOffSms(body, kicker, title, autoOpen = true) {
+  const phones = alertPhones();
+  if (!phones.length) { showNoContactsPanel(kicker); return false; }
+  const uri = smsUri(phones, body);
+  openSendPanel(kicker, title, body, uri, phones.length);
+  if (autoOpen) { pendingSmsUri = uri; try { window.location.href = uri; } catch {} }
+  return true;
+}
+function openSendPanel(kicker, title, body, uri, count) {
+  document.getElementById('sendKicker').textContent = kicker;
+  document.getElementById('sendTitle').textContent = title;
+  document.getElementById('sendNote').textContent = `Your messages app should open with this text for ${count} contact${count === 1 ? '' : 's'}. If it didn't, tap Send text. SafeHer can't send it for you.`;
+  document.getElementById('sendPreview').textContent = body;
+  document.getElementById('sendPreview').hidden = false;
+  document.getElementById('sendLoc').classList.remove('show');
+  const sms = document.getElementById('sendSmsBtn'); sms.href = uri; sms.hidden = false;
+  document.getElementById('sendContactsBtn').hidden = true;
+  document.getElementById('sendPanel').classList.add('show');
+}
+function showNoContactsPanel(kicker) {
+  document.getElementById('sendKicker').textContent = kicker;
+  document.getElementById('sendTitle').textContent = 'No one to text yet';
+  document.getElementById('sendNote').textContent = "You don't have any emergency contacts with a valid number. If you're in danger, call 911 now.";
+  document.getElementById('sendPreview').hidden = true;
+  document.getElementById('sendLoc').classList.remove('show');
+  document.getElementById('sendSmsBtn').hidden = true;
+  document.getElementById('sendContactsBtn').hidden = false;
+  document.getElementById('sendPanel').classList.add('show');
+}
+// A location fix arrived after the panel opened without one: put it in the text.
+function addLocationToPanel(body) {
+  const panel = document.getElementById('sendPanel');
+  if (!panel.classList.contains('show')) return;
+  const phones = alertPhones(); if (!phones.length) return;
+  const uri = smsUri(phones, body);
+  document.getElementById('sendPreview').textContent = body;
+  document.getElementById('sendSmsBtn').href = uri;
+  document.getElementById('sendLoc').classList.add('show');
+  pendingSmsUri = null;
+}
+function closeSendPanel() { document.getElementById('sendPanel').classList.remove('show'); pendingSmsUri = null; }
 
 // ═══════════════════════════════════════════════════════════
 //  ACTIVITY LOG
@@ -2611,6 +2715,7 @@ function updateRing(progress) {
 }
 function sosStart(e) {
   e.preventDefault();
+  sosFiredThisHold = false; // a mouse release can land on the send panel instead of this button
   if (sosHolding) return;
   sosHolding = true; sosProgress = 0;
   sosBtn.classList.add('holding');
@@ -2626,6 +2731,14 @@ function sosStart(e) {
 }
 function sosEnd(e) {
   if (e) e.preventDefault();
+  if (sosFiredThisHold) {
+    sosFiredThisHold = false;
+    if (e && (e.type === 'touchend' || e.type === 'mouseup') && pendingSmsUri && document.visibilityState === 'visible') {
+      const uri = pendingSmsUri; pendingSmsUri = null;
+      try { window.location.href = uri; } catch {}
+    }
+    return;
+  }
   if (!sosHolding) return;
   sosHolding = false;
   if (sosInterval) { clearInterval(sosInterval); sosInterval=null; }
@@ -2633,44 +2746,32 @@ function sosEnd(e) {
   sosVignette.classList.remove('active');
   updateRing(0);
 }
-function sendSOSSms(locationStr) {
-  const contacts = loadContacts();
-  const emergency = contacts.filter(c => c.emergency);
-  const targets = emergency.length > 0 ? emergency : contacts;
-  if (targets.length === 0) { showToast('Add emergency contacts to send SOS alerts'); return; }
-  const phones = targets.map(c => c.phone).join(',');
-  const body = locationStr ? `SOS! I need help! My location: ${locationStr}` : 'SOS! I need help! Please check on me.';
-  window.open(`sms:${phones}?&body=${encodeURIComponent(body)}`, '_self');
-}
 function sosTrigger() {
-  sosHolding = false;
+  sosHolding = false; sosFiredThisHold = true;
   sosBtn.classList.remove('holding');
   sosVignette.classList.remove('active');
   updateRing(1);
   haptic('sosTrigger');
-  logEvent('sos', 'SOS alert triggered');
+  logEvent('sos', 'SOS activated');
   updateStatusHero('alert');
-  showAlert('SOS Alert Sent! Requesting your location...', 7000);
+  // Hand off right now with whatever location we already have. Waiting on GPS
+  // here is what used to make the text silently never open.
+  const pos = freshPosition();
+  const body = pos ? `SOS! I need help. My location: ${formatLocationUrl(pos)}` : 'SOS! I need help. Please call me or come find me now.';
+  if (handOffSms(body, 'SOS', 'Send your SOS text')) {
+    showAlert(pos ? 'Opening your messages. Your location is in the text.' : 'Opening your messages. No location yet, still looking.', 7000);
+  }
+  // Keep tracking for a few minutes; if the first text had no location, add it the moment a fix arrives.
   if (sosWatchId !== null) { navigator.geolocation.clearWatch(sosWatchId); sosWatchId = null; }
   if (navigator.geolocation) {
-    let sosSmsSent = false;
+    let upgraded = !!pos;
     sosWatchId = navigator.geolocation.watchPosition(
-      pos => {
-        if (!sosSmsSent) { sosSmsSent = true; showAlert('SOS Alert! Opening SMS...', 5000); sendSOSSms(formatLocationUrl(pos)); }
-      },
-      err => {
-        if (!sosSmsSent) {
-          sosSmsSent = true;
-          showAlert(err.code === 1 ? 'Location permission denied — sending SOS without location.' : 'SOS Alert! Sending without location...', 6000);
-          sendSOSSms(null);
-        }
-        if (sosWatchId !== null) { navigator.geolocation.clearWatch(sosWatchId); sosWatchId = null; }
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
+      p => { rememberPosition(p); if (!upgraded) { upgraded = true; addLocationToPanel(`SOS! I need help. My location: ${formatLocationUrl(p)}`); } },
+      err => { if (err.code === 1 && !pos) showToast('Location is off, so the SOS text has no location.', 5000); },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
     );
-    // Keep tracking location for a few minutes after an SOS in case a fresher fix is needed for a re-share.
     setTimeout(() => { if (sosWatchId !== null) { navigator.geolocation.clearWatch(sosWatchId); sosWatchId = null; } }, 5 * 60 * 1000);
-  } else sendSOSSms(null);
+  }
   setTimeout(() => { sosRingFill.classList.add('draining'); updateRing(0); setTimeout(() => sosRingFill.classList.remove('draining'), 800); }, 1200);
 }
 sosBtn.addEventListener('mousedown', sosStart);
@@ -2708,7 +2809,7 @@ function updateStatusHero(state, extra) {
   } else if (state === 'alert') {
     ring.classList.add('alert-active');
     icon.classList.add('alert');
-    text.textContent = 'Alert sent';
+    text.textContent = 'SOS activated';
     text.style.color = 'var(--accent-red)';
     sub.textContent = 'Stay safe';
     headerSub.textContent = 'Alert active';
@@ -2730,18 +2831,22 @@ function startCheckin(resumeSeconds) {
     checkinSecondsLeft = resumeSeconds;
     checkinTotalSeconds = resumeSeconds;
   } else {
+    // A hidden <select> used to hold this and silently turned 1/2/20/45 min into NaN,
+    // so the timer never expired. Refuse to start rather than run a broken timer.
     const dur = parseInt(document.getElementById('checkinDuration').value, 10);
+    if (!(dur > 0)) { showToast('Pick a time first'); return; }
     checkinSecondsLeft = dur * 60;
     checkinTotalSeconds = checkinSecondsLeft;
     localStorage.setItem('safeher-checkin', JSON.stringify({ startTime: Date.now(), durationSec: checkinTotalSeconds }));
     logEvent('checkin', `Started ${dur}min check-in`);
   }
   checkinRunning = true;
+  checkinDeadline = Date.now() + checkinSecondsLeft * 1000;
   checkinLastPosition = null; checkinGeoErrorShown = false;
   if (navigator.geolocation) {
     if (checkinWatchId !== null) navigator.geolocation.clearWatch(checkinWatchId);
     checkinWatchId = navigator.geolocation.watchPosition(
-      pos => { checkinLastPosition = pos; },
+      pos => { checkinLastPosition = pos; rememberPosition(pos); },
       err => {
         if (!checkinGeoErrorShown) {
           checkinGeoErrorShown = true;
@@ -2769,49 +2874,46 @@ function startCheckin(resumeSeconds) {
   document.getElementById('timerBadge').classList.add('visible');
   updateStatusHero('timer', formatTime(checkinSecondsLeft));
 
-  checkinTimerInterval = setInterval(() => {
-    checkinSecondsLeft--;
-    const display = document.getElementById('checkinTimeDisplay');
-    display.textContent = formatTime(checkinSecondsLeft);
-    updateCheckinRing(checkinSecondsLeft / checkinTotalSeconds);
-    const pct = checkinSecondsLeft / checkinTotalSeconds;
-    const ring = document.getElementById('checkinRingFill');
-    if (pct <= 0.1) {
-      display.classList.add('warning'); display.classList.remove('running');
-      ring.classList.add('expired-ring'); ring.classList.remove('warning-ring');
-    } else if (pct <= 0.25) {
-      display.classList.add('warning'); display.classList.remove('running');
-      ring.classList.add('warning-ring'); ring.classList.remove('expired-ring');
-    }
-    updateStatusHero('timer', formatTime(checkinSecondsLeft));
-
-    if (checkinSecondsLeft <= 0) {
-      display.classList.remove('running','warning'); display.classList.add('expired');
-      ring.classList.add('expired-ring'); ring.classList.remove('warning-ring');
-      stopCheckin(false);
-      haptic('timerExpiry');
-      logEvent('checkin_expire', 'Check-in timer expired');
-      showAlert('Check-in timer expired! Are you safe?', 10000);
-      updateStatusHero('alert');
-      const contacts = loadContacts();
-      const emergency = contacts.filter(c => c.emergency);
-      const targets = emergency.length > 0 ? emergency : contacts;
-      if (targets.length > 0) {
-        const phones = targets.map(c => c.phone).join(',');
-        if (checkinLastPosition) {
-          window.open(`sms:${phones}?&body=${encodeURIComponent("I haven't checked in on SafeHer. My last location: " + formatLocationUrl(checkinLastPosition))}`, '_self');
-        } else if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(pos => {
-            window.open(`sms:${phones}?&body=${encodeURIComponent("I haven't checked in on SafeHer. My last location: " + formatLocationUrl(pos))}`, '_self');
-          }, () => {
-            window.open(`sms:${phones}?&body=${encodeURIComponent("I haven't checked in on SafeHer. Please check on me.")}`, '_self');
-          }, { timeout: 5000 });
-        } else {
-          window.open(`sms:${phones}?&body=${encodeURIComponent("I haven't checked in on SafeHer. Please check on me.")}`, '_self');
-        }
-      }
-    }
-  }, 1000);
+  checkinTimerInterval = setInterval(checkinTick, 1000);
+}
+// Counts down from a real deadline, not by subtracting 1 per tick: phones throttle
+// background timers, and a decrementing counter could expire minutes late.
+function checkinTick() {
+  if (!checkinRunning) return;
+  checkinSecondsLeft = Math.max(0, Math.ceil((checkinDeadline - Date.now()) / 1000));
+  const display = document.getElementById('checkinTimeDisplay');
+  display.textContent = formatTime(checkinSecondsLeft);
+  updateCheckinRing(checkinSecondsLeft / checkinTotalSeconds);
+  const pct = checkinSecondsLeft / checkinTotalSeconds;
+  const ring = document.getElementById('checkinRingFill');
+  if (pct <= 0.1) {
+    display.classList.add('warning'); display.classList.remove('running');
+    ring.classList.add('expired-ring'); ring.classList.remove('warning-ring');
+  } else if (pct <= 0.25) {
+    display.classList.add('warning'); display.classList.remove('running');
+    ring.classList.add('warning-ring'); ring.classList.remove('expired-ring');
+  }
+  updateStatusHero('timer', formatTime(checkinSecondsLeft));
+  if (checkinSecondsLeft <= 0) {
+    display.classList.remove('running','warning'); display.classList.add('expired');
+    ring.classList.add('expired-ring'); ring.classList.remove('warning-ring');
+    const pos = freshPosition() || checkinLastPosition;
+    stopCheckin(false);
+    checkinExpired(pos, null);
+  }
+}
+function checkinExpired(pos, expiredAt) {
+  haptic('timerExpiry');
+  logEvent('checkin_expire', expiredAt ? 'Check-in expired while the app was closed' : 'Check-in timer expired');
+  updateStatusHero('alert');
+  const when = expiredAt ? ` at ${new Date(expiredAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : '';
+  const body = pos
+    ? `I didn't check in on SafeHer${when}. My last location: ${formatLocationUrl(pos)}`
+    : `I didn't check in on SafeHer${when}. Please call me or check on me.`;
+  showAlert(expiredAt ? 'Your check-in ran out while SafeHer was closed.' : 'Check-in time is up. Are you safe?', 10000);
+  // On reopen there's no tap behind us, and opening Messages mid-load would stall
+  // the page, so the panel's Send button is the path.
+  handOffSms(body, 'Check-in expired', expiredAt ? 'Your check-in ran out' : 'Time is up', !expiredAt);
 }
 function stopCheckin(safe) {
   clearInterval(checkinTimerInterval); checkinTimerInterval = null;
@@ -2979,15 +3081,17 @@ function importContacts(event) {
       const data = JSON.parse(reader.result);
       const incoming = Array.isArray(data) ? data : data.contacts;
       if (!Array.isArray(incoming)) throw new Error('bad format');
-      const valid = incoming.filter(c => c && typeof c.name === 'string' && typeof c.phone === 'string')
+      const shaped = incoming.filter(c => c && typeof c.name === 'string' && typeof c.phone === 'string')
         .map(c => ({ name: c.name.trim(), phone: c.phone.trim(), emergency: !!c.emergency }));
+      const valid = shaped.filter(c => c.name.length >= 2 && PHONE_RE.test(cleanPhone(c.phone)));
+      const skipped = incoming.length - valid.length;
       if (valid.length === 0) throw new Error('no contacts');
       const existing = loadContacts();
       const key = c => `${c.name.toLowerCase()}|${c.phone}`;
       const existingKeys = new Set(existing.map(key));
       const merged = existing.concat(valid.filter(c => !existingKeys.has(key(c))));
       saveContacts(merged); renderContacts();
-      showToast(`Imported ${merged.length - existing.length} contact(s)`);
+      showToast(`Imported ${merged.length - existing.length} contact(s)` + (skipped ? `, skipped ${skipped} with a bad number` : ''), 4000);
     } catch {
       showToast('Could not import file — invalid backup');
     }
@@ -3000,13 +3104,22 @@ function importContacts(event) {
 // ═══════════════════════════════════════════════════════════
 function setCallDelay(seconds) { callDelay=seconds; document.querySelectorAll('.delay-btn').forEach(b=>{ b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); }); event.target.classList.add('selected'); event.target.setAttribute('aria-pressed', 'true'); document.getElementById('delayStatus').textContent=''; }
 function shareLocation() {
+  const pos = freshPosition();
+  if (pos) { sharePosition(pos); return; }
   if (!navigator.geolocation) { showToast('Location not available'); return; }
-  showToast('Getting your location...');
-  navigator.geolocation.getCurrentPosition(pos => {
-    const url = `https://maps.google.com/maps?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
-    if (navigator.share) navigator.share({ title:'My Location', text:`I'm here: ${url}`, url }).catch(()=>{});
-    else navigator.clipboard.writeText(`I'm here: ${url}`).then(()=>showToast('Location copied!')).catch(()=>showToast(`${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`));
+  showToast('Getting your location...', 10000);
+  navigator.geolocation.getCurrentPosition(p => {
+    rememberPosition(p);
+    // The original tap has expired by now, so sharing needs a fresh one.
+    showActionToast('Location ready.', 'Share', () => sharePosition(p));
   }, handleGeoError, { enableHighAccuracy:true, timeout:10000 });
+}
+function sharePosition(pos) {
+  const url = `https://maps.google.com/maps?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
+  const text = `I'm here: ${url}`;
+  const copy = () => navigator.clipboard.writeText(text).then(() => showToast('Location copied!')).catch(() => showToast(`${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`, 8000));
+  if (navigator.share) navigator.share({ title:'My Location', text, url }).catch(e => { if (e.name !== 'AbortError') copy(); });
+  else copy();
 }
 let toastTimeout = null;
 function showToast(msg, duration) {
@@ -3014,6 +3127,14 @@ function showToast(msg, duration) {
   toast.innerHTML=''; toast.textContent=msg; toast.classList.remove('has-action'); toast.classList.add('show');
   if (toastTimeout) clearTimeout(toastTimeout);
   toastTimeout = setTimeout(() => toast.classList.remove('show'), duration || 3000);
+}
+function showActionToast(msg, label, callback) {
+  const toast = document.getElementById('toast');
+  toast.innerHTML = `${escapeHtml(msg)} <button class="toast-undo-btn" id="toastUndoBtn">${escapeHtml(label)}</button>`;
+  toast.classList.add('show','has-action');
+  if (toastTimeout) clearTimeout(toastTimeout);
+  document.getElementById('toastUndoBtn').onclick = () => { toast.classList.remove('show','has-action'); clearTimeout(toastTimeout); callback(); };
+  toastTimeout = setTimeout(() => toast.classList.remove('show','has-action'), 8000);
 }
 function showUndoToast(msg, callback) {
   const toast = document.getElementById('toast');
@@ -3289,7 +3410,7 @@ renderActivityLog();
     const elapsed = Math.floor((Date.now() - saved.startTime) / 1000);
     const remaining = saved.durationSec - elapsed;
     if (remaining > 0) startCheckin(remaining);
-    else { localStorage.removeItem('safeher-checkin'); showAlert('Check-in timer expired while you were away!', 10000); }
+    else { localStorage.removeItem('safeher-checkin'); checkinExpired(null, saved.startTime + saved.durationSec * 1000); }
   } catch { localStorage.removeItem('safeher-checkin'); }
 })();
 
@@ -3311,6 +3432,12 @@ function stepDuration(dir) {
 // Stepper init
 document.getElementById('stepperMinus').disabled = false;
 document.getElementById('stepperPlus').disabled = false;
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') { pendingSmsUri = null; stopIdleWatch(); }
+  else { syncIdleWatch(); checkinTick(); }
+});
+syncIdleWatch();
 
 // Service Worker
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
