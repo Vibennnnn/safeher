@@ -2944,7 +2944,21 @@ function setPreset(name) {
   event.target.setAttribute('aria-pressed', 'true');
   document.getElementById('callerNameInput').value = name;
 }
+// Phones only let audio start from a tap. A delayed call rings with no tap behind it,
+// so start (and immediately pause) both audio paths now, while we still have one.
+function primeCallAudio() {
+  try {
+    if (!callRingtoneAudio) { callRingtoneAudio = new Audio('reflection.m4a'); callRingtoneAudio.loop = true; }
+    const a = callRingtoneAudio; a.muted = true;
+    const p = a.play();
+    const done = () => { if (!callRingtonePlaying) { a.pause(); a.currentTime = 0; } a.muted = callMuted; };
+    if (p && p.then) p.then(done).catch(() => { a.muted = callMuted; }); else done();
+    if (!fallbackCtx) fallbackCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (fallbackCtx.state === 'suspended') fallbackCtx.resume().catch(() => {});
+  } catch {}
+}
 function startFakeCall() {
+  primeCallAudio();
   let name = document.getElementById('callerNameInput').value.trim() || 'Unknown';
   if (callDelayTimer) { clearTimeout(callDelayTimer); callDelayTimer=null; }
   if (countdownInterval) { clearInterval(countdownInterval); countdownInterval=null; }
@@ -2952,13 +2966,14 @@ function startFakeCall() {
     const cdOverlay = document.getElementById('countdownOverlay');
     const cdNumber = document.getElementById('countdownNumber');
     let remaining = callDelay;
+    const ringAt = Date.now() + callDelay * 1000;
     cdNumber.textContent = remaining;
     cdOverlay.classList.add('active');
     const btn = document.getElementById('fakeCallBtn');
     btn.textContent = 'Cancel Pending Call';
     btn.onclick = function(){ clearInterval(countdownInterval); countdownInterval=null; cdOverlay.classList.remove('active'); btn.textContent='Start Fake Call'; btn.onclick=startFakeCall; document.getElementById('delayStatus').textContent=''; };
     countdownInterval = setInterval(() => {
-      remaining--;
+      remaining = Math.max(0, Math.ceil((ringAt - Date.now()) / 1000));
       cdNumber.textContent = remaining;
       if (remaining <= 0) { clearInterval(countdownInterval); countdownInterval=null; cdOverlay.classList.remove('active'); btn.textContent='Start Fake Call'; btn.onclick=startFakeCall; document.getElementById('delayStatus').textContent=''; triggerFakeCall(name); }
     }, 1000);
@@ -2967,14 +2982,13 @@ function startFakeCall() {
   triggerFakeCall(name);
 }
 function triggerFakeCall(name) {
-  const safe = escapeHtml(name);
   const initial = name.charAt(0).toUpperCase();
   const hue1 = (initial.charCodeAt(0) * 47) % 360;
   const avatar = document.getElementById('callAvatarLetter');
   avatar.textContent = initial;
   avatar.style.background = `hsl(${hue1}, 40%, 50%)`;
-  document.getElementById('callCallerName').textContent = safe;
-  document.getElementById('callCallerNameActive').textContent = safe;
+  document.getElementById('callCallerName').textContent = name;
+  document.getElementById('callCallerNameActive').textContent = name;
   document.getElementById('callSubtitle').textContent = 'iPhone';
   callAnswered=false; callElapsed=0; callMuted=false;
   document.getElementById('callGridMute').classList.remove('active');
@@ -3308,6 +3322,19 @@ function enableShake() {
 }
 if (localStorage.getItem(SHAKE_ENABLED_KEY) === 'true') {
   window.addEventListener('devicemotion', handleShake);
+  // On iPhone, motion events stay off after a reload until permission is asked again
+  // from a tap. Re-arm on the first tap anywhere so the ON switch isn't lying.
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    const shakeOff = () => {
+      window.removeEventListener('devicemotion', handleShake);
+      localStorage.setItem(SHAKE_ENABLED_KEY, 'false');
+      const st = document.getElementById('shakeToggle'); st.classList.remove('active'); st.setAttribute('aria-checked', 'false');
+      const sw = document.getElementById('shakeToggleSwitch'); if (sw) { sw.classList.remove('on'); sw.setAttribute('aria-checked', 'false'); }
+      showToast('Shake-to-SOS is off: motion access was denied', 4000);
+    };
+    const rearm = () => DeviceMotionEvent.requestPermission().then(perm => { if (perm !== 'granted') shakeOff(); }).catch(shakeOff);
+    document.addEventListener('click', rearm, { once: true, capture: true });
+  }
   const st = document.getElementById('shakeToggle'); st.classList.add('active'); st.setAttribute('aria-checked', 'true');
   const sw = document.getElementById('shakeToggleSwitch'); if (sw) { sw.classList.add('on'); sw.setAttribute('aria-checked', 'true'); }
 }
