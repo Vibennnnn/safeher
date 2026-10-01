@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#6C3FC5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1961,6 +1962,52 @@ body.light-theme .settings-panel { background: #f5f3ff; }
 .sos-pill.holding { transform: scale(0.94); }
 body[data-tab="home"] .sos-pill { display: none; }
 
+/* ── Quick Exit ──────────────────────────────────────────────
+   One tap swaps the whole screen to a plain Notes screen. It's
+   neutral on purpose (not alarm-red, unlike SOS) and sits above
+   every overlay except the fake call and onboarding. */
+.exit-now { position: fixed; z-index: 9100; top: calc(13px + env(safe-area-inset-top)); left: max(12px, calc(50vw - var(--app-half, 215px) + 12px)); height: 38px; padding: 0 13px 0 10px; display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: var(--radius-pill); background: var(--text-primary); color: var(--bg-primary); font: 700 13.5px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.25); touch-action: manipulation; }
+.exit-now svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.6; stroke-linecap: round; }
+.exit-now::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 44px; transform: translateY(-50%); }
+.exit-now:focus-visible { outline: 3px solid var(--accent-teal-bright); outline-offset: 3px; }
+.app-header { padding-left: calc(20px + 104px); }
+.header-shield, #themeToggleBtn { display: none; } /* room for Exit; theme lives in Settings */
+.header-text { min-width: 0; }
+.header-title, .header-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 768px) { :root { --app-half: 240px; } }
+
+/* The decoy: looks like a plain notes app, follows the phone's own light/dark setting,
+   shares nothing with SafeHer's look. Sits at 8000: below the send panel (9000) and
+   alert banner, so an SOS or a check-in expiry still shows up over it. */
+.decoy { position: fixed; inset: 0; z-index: 8000; display: none; overflow-y: auto; background: #f2f2f7; color: #1c1c1e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: calc(env(safe-area-inset-top) + 22px) 18px 40px; }
+body.decoy-on .decoy, body.bg-cover .decoy { display: block; }
+body.decoy-on .exit-now, body.bg-cover .exit-now { display: none; }
+.decoy-top { max-width: 600px; margin: 0 auto; }
+.decoy-title { display: block; background: none; border: none; padding: 0; margin: 8px 0 2px; color: inherit; font: 800 34px/1.15 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; letter-spacing: -0.02em; cursor: default; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
+.decoy:focus, .decoy-title:focus { outline: none; }
+.decoy-count { font-size: 14px; color: #6c6c70; margin-bottom: 14px; }
+.decoy-search { background: #e3e3e8; color: #6c6c70; border-radius: 10px; padding: 9px 12px; font-size: 16px; margin-bottom: 18px; }
+.decoy-list { background: #fff; border-radius: 12px; overflow: hidden; }
+.decoy-note { padding: 12px 16px; border-bottom: 1px solid #e5e5ea; display: grid; gap: 2px; }
+.decoy-note:last-child { border-bottom: none; }
+.decoy-note b { font-size: 16px; font-weight: 700; }
+.decoy-note span { font-size: 14px; color: #6c6c70; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.decoy-note span i { font-style: normal; color: #1c1c1e; margin-right: 6px; }
+@media (prefers-color-scheme: dark) {
+  .decoy { background: #000; color: #fff; }
+  .decoy-count, .decoy-note span { color: #98989f; }
+  .decoy-note span i { color: #fff; }
+  .decoy-search { background: #1c1c1e; color: #98989f; }
+  .decoy-list { background: #1c1c1e; }
+  .decoy-note { border-bottom-color: #38383a; }
+}
+.settings-note { margin: 18px 0 6px; padding: 14px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border-light); font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
+.settings-note-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+.settings-note p + p { margin-top: 8px; }
+.settings-note a { color: var(--accent-teal-bright); font-weight: 600; }
+.log-clear-btn { background: none; border: 1px solid var(--border-medium); color: var(--text-secondary); border-radius: var(--radius-pill); font: 600 12px/1 -apple-system, BlinkMacSystemFont, sans-serif; padding: 0 12px; min-height: 30px; cursor: pointer; position: relative; }
+.log-clear-btn::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 44px; transform: translateY(-50%); }
+
 /* ── Tap targets: 44px minimum, same bar the earlier a11y fixes set ── */
 .resource-call-btn { width: 44px; height: 44px; }
 .safety-level-btn { min-height: 44px; }
@@ -2087,7 +2134,7 @@ body[data-tab="home"] .sos-pill { display: none; }
     <div class="card" id="activityLogCard" style="display:none;">
       <div class="card-title" onclick="document.getElementById('activityLogContent').classList.toggle('expanded')" style="cursor:pointer;justify-content:space-between;">
         Activity Log
-        <span style="font-size:11px;opacity:0.4;text-transform:none;letter-spacing:0;">tap to expand</span>
+        <button class="log-clear-btn" type="button" onclick="event.stopPropagation(); clearActivity();">Clear</button>
       </div>
       <div id="activityLogContent" class="log-collapsed"></div>
     </div>
@@ -2435,6 +2482,15 @@ body[data-tab="home"] .sos-pill { display: none; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
       Resources & Hotlines
     </div>
+    <div class="settings-note">
+      <div class="settings-note-title">Exit now</div>
+      <p>Tap <b>Exit now</b> at the top left to switch instantly to a plain Notes screen. To come back, press and hold the word <b>Notes</b> for 2 seconds. On a computer, press Shift 3 times.</p>
+      <p>It can't delete your browser history, close other tabs, or remove SafeHer from your home screen or recent apps. Someone who checks your phone may still find it. Worried your phone is being watched? Call the National DV Hotline: <a href="tel:18007997233">1-800-799-7233</a>.</p>
+    </div>
+    <div class="settings-link" role="button" tabindex="0" onclick="clearActivity()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();clearActivity();}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+      Clear activity history
+    </div>
   </div>
   <div style="margin-top:auto;padding-top:20px;font-size:11px;color:var(--text-faint);text-align:center;">
     SafeHer v2.0
@@ -2541,6 +2597,23 @@ body[data-tab="home"] .sos-pill { display: none; }
     </div>
     <div class="call-end-wrap">
       <button class="call-end-btn" onclick="endCall()"><div class="end-call-circle"><svg width="33" height="33" viewBox="0 0 56 56" fill="white"><path d="M28 20c-4.4 0-8.6.7-12.5 2v8.4c0 1-.6 2-1.5 2.4-2.7 1.4-5.1 3.1-7.3 5.1-.5.5-1.2.7-1.9.7s-1.4-.3-1.9-.8l-2.1-2.1c-.5-.5-.8-1.2-.8-1.9s.3-1.5.8-2C5.5 27.3 16.2 22 28 22s22.5 5.3 27.2 9.8c.5.5.8 1.2.8 1.9s-.3 1.4-.8 1.9L53.1 37.8c-.5.5-1.2.8-1.9.8s-1.4-.3-1.9-.8c-2.2-2-4.6-3.6-7.3-5.1-.9-.5-1.5-1.4-1.5-2.4V22c-3.9-1.3-8.1-2-12.5-2z"/></svg></div><div class="end-call-label">End</div></button>
+    </div>
+  </div>
+</div>
+
+<button class="exit-now" id="exitNowBtn" type="button" onclick="quickExit()" aria-label="Exit now: switch to a plain screen immediately"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Exit now</button>
+
+<div class="decoy" id="decoy" aria-hidden="true" tabindex="-1">
+  <div class="decoy-top">
+    <button class="decoy-title" id="decoyTitle" type="button">Notes</button>
+    <div class="decoy-count">5 Notes</div>
+    <div class="decoy-search">Search</div>
+    <div class="decoy-list">
+      <div class="decoy-note"><b>Groceries</b><span><i>Today</i>eggs, milk, rice, spinach, lemons, coffee</span></div>
+      <div class="decoy-note"><b>Pick up dry cleaning</b><span><i>Yesterday</i>closes at 6 on Thursday</span></div>
+      <div class="decoy-note"><b>Birthday ideas</b><span><i>Monday</i>candle, that blue scarf, a card</span></div>
+      <div class="decoy-note"><b>Recipes to try</b><span><i>Sep 21</i>lemon pasta, chicken soup, banana bread</span></div>
+      <div class="decoy-note"><b>Wifi password</b><span><i>Sep 14</i>on the back of the router</span></div>
     </div>
   </div>
 </div>
@@ -2661,8 +2734,7 @@ function renderReadiness() {
   const phones = alertPhones();
   const emergency = contacts.filter(c => c.emergency && PHONE_RE.test(cleanPhone(c.phone)));
   if (!phones.length) setChip('readyContacts', 'readyContactsText', 'warn', 'Add an SOS contact');
-  else if (emergency.length === 1) setChip('readyContacts', 'readyContactsText', 'ok', `SOS texts ${emergency[0].name}`);
-  else setChip('readyContacts', 'readyContactsText', 'ok', `SOS texts ${phones.length} people`);
+  else setChip('readyContacts', 'readyContactsText', 'ok', `SOS ready · ${phones.length} contact${phones.length === 1 ? '' : 's'}`); // no names on the first screen
   const sub = document.getElementById('statusSubtext');
   if (sub && document.getElementById('statusText').textContent === 'All clear') sub.textContent = (locOk && phones.length) ? 'Ready if you need it' : 'Finish setup below';
 }
@@ -2671,6 +2743,76 @@ function readyLocTap() {
   if (geoPermState === 'denied') { showToast('Location is blocked. Turn it on for this site in your browser settings.', 5000); return; }
   if (!navigator.geolocation) { showToast('Location not available'); return; }
   navigator.geolocation.getCurrentPosition(p => { rememberPosition(p); syncIdleWatch(); }, handleGeoError, { enableHighAccuracy: true, timeout: 15000 });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  QUICK EXIT — swap to a decoy screen without leaving the page
+// ═══════════════════════════════════════════════════════════
+// The page stays loaded on purpose: leaving it would stop the check-in timer and
+// Shake-to-SOS, and an installed app can't really leave anyway (iOS/Android show the
+// outside site in a sheet whose Done/X button drops you right back into SafeHer).
+const REAL_TITLE = document.title;
+let decoyActive = false, exitIgnoreUntil = 0;
+function isStandaloneApp() { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }
+function setAppHidden(hidden) {
+  const app = document.getElementById('app');
+  if (hidden) { app.setAttribute('aria-hidden', 'true'); app.inert = true; } else { app.removeAttribute('aria-hidden'); app.inert = false; }
+  document.getElementById('decoy').setAttribute('aria-hidden', hidden ? 'false' : 'true');
+}
+function quickExit() {
+  // "Notes" sits where the Exit button is, so the finger lifting off a return-hold
+  // lands on Exit. Ignore that one tap.
+  if (Date.now() < exitIgnoreUntil) return;
+  // Everything below runs before anything else gets a chance to paint.
+  decoyActive = true;
+  document.body.classList.add('decoy-on');
+  document.title = 'Notes';
+  setAppHidden(true);
+  closeSendPanel();
+  document.getElementById('settingsOverlay').classList.remove('active');
+  document.getElementById('settingsPanel').classList.remove('active');
+  const log = document.getElementById('activityLogContent'); if (log) log.classList.remove('expanded');
+  document.getElementById('toast').classList.remove('show', 'has-action');
+  document.getElementById('alertBanner').classList.remove('show', 'hiding');
+  document.getElementById('decoy').focus({ preventScroll: true }); // no focus ring on screen: a real notes app wouldn't show one
+  // In an ordinary browser tab with nothing running, also leave for a real site,
+  // replacing this page so Back can't return to it.
+  if (!isStandaloneApp() && !checkinRunning) { try { location.replace('https://weather.com/'); } catch {} }
+}
+function leaveDecoy() {
+  exitIgnoreUntil = Date.now() + 1500;
+  decoyActive = false;
+  document.body.classList.remove('decoy-on');
+  document.title = REAL_TITLE;
+  setAppHidden(false);
+}
+// Coming back takes a deliberate 2-second hold on the word "Notes".
+(function wireDecoyReturn() {
+  const title = document.getElementById('decoyTitle');
+  let holdTimer = null;
+  const start = e => { if (e.type === 'keydown') { if (!(e.key === 'Enter' || e.key === ' ') || e.repeat) return; e.preventDefault(); } clearTimeout(holdTimer); holdTimer = setTimeout(leaveDecoy, 2000); };
+  const stop = () => { clearTimeout(holdTimer); holdTimer = null; };
+  title.addEventListener('pointerdown', start);
+  title.addEventListener('keydown', start);
+  ['pointerup', 'pointerleave', 'pointercancel', 'keyup', 'blur'].forEach(ev => title.addEventListener(ev, stop));
+  title.addEventListener('contextmenu', e => e.preventDefault());
+})();
+// Keyboard: Shift pressed 3 times (GOV.UK's pattern). Shift used to type a capital doesn't count.
+(function wireShiftExit() {
+  let presses = 0, timer = null, lastKeyWasModified = false;
+  document.addEventListener('keyup', e => {
+    if (e.key === 'Shift' && !lastKeyWasModified) {
+      presses++; clearTimeout(timer); timer = setTimeout(() => { presses = 0; }, 5000);
+      if (presses >= 3) { presses = 0; if (!decoyActive) quickExit(); }
+    } else if (e.key !== 'Shift') presses = 0;
+    lastKeyWasModified = e.shiftKey;
+  }, true);
+})();
+function clearActivity() {
+  localStorage.removeItem(LOG_KEY);
+  const log = document.getElementById('activityLogContent'); if (log) log.classList.remove('expanded');
+  renderActivityLog();
+  showToast('Activity history cleared');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -3042,8 +3184,8 @@ function checkinExpired(pos, expiredAt) {
   updateStatusHero('alert');
   const when = expiredAt ? ` at ${new Date(expiredAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : '';
   const body = pos
-    ? `I didn't check in on SafeHer${when}. My last location: ${formatLocationUrl(pos)}`
-    : `I didn't check in on SafeHer${when}. Please call me or check on me.`;
+    ? `I missed my check-in${when}. My last location: ${formatLocationUrl(pos)}`
+    : `I missed my check-in${when}. Please call me or check on me.`;
   showAlert(expiredAt ? 'Your check-in ran out while SafeHer was closed.' : 'Check-in time is up. Are you safe?', 10000);
   // On reopen there's no tap behind us, and opening Messages mid-load would stall
   // the page, so the panel's Send button is the path.
@@ -3138,7 +3280,6 @@ function triggerFakeCall(name) {
   document.getElementById('callIncoming').style.opacity='1'; document.getElementById('callIncoming').style.display='flex';
   document.getElementById('callActive').style.opacity='0'; document.getElementById('callActive').style.display='none';
   document.body.style.overflow='hidden';
-  logEvent('fakecall', `Fake call from ${name}`);
   trapFocus(overlay);
 }
 function answerCall() {
@@ -3211,10 +3352,10 @@ function toggleEmergency(index) {
 function exportContacts() {
   const contacts = loadContacts();
   if (contacts.length === 0) { showToast('No contacts to export'); return; }
-  const blob = new Blob([JSON.stringify({ app: 'SafeHer', contacts }, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify({ contacts }, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `safeher-contacts-${new Date().toISOString().slice(0,10)}.json`;
+  a.href = url; a.download = `contacts-backup-${new Date().toISOString().slice(0,10)}.json`;
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
   showToast('Contacts exported');
@@ -3271,6 +3412,7 @@ function sharePosition(pos) {
 }
 let toastTimeout = null;
 function showToast(msg, duration) {
+  if (decoyActive) return;
   const toast = document.getElementById('toast');
   toast.innerHTML=''; toast.textContent=msg; toast.classList.remove('has-action'); toast.classList.add('show');
   if (toastTimeout) clearTimeout(toastTimeout);
@@ -3595,9 +3737,12 @@ document.getElementById('stepperMinus').disabled = false;
 document.getElementById('stepperPlus').disabled = false;
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') { pendingSmsUri = null; stopIdleWatch(); }
-  else { syncIdleWatch(); checkinTick(); }
+  if (document.visibilityState === 'hidden') { document.body.classList.add('bg-cover'); pendingSmsUri = null; stopIdleWatch(); }
+  else { document.body.classList.remove('bg-cover'); syncIdleWatch(); checkinTick(); }
 });
+// Best effort only: browsers don't promise this paints before the OS snapshot.
+window.addEventListener('pagehide', () => document.body.classList.add('bg-cover'));
+window.addEventListener('pageshow', () => { if (document.visibilityState === 'visible') document.body.classList.remove('bg-cover'); });
 document.body.dataset.tab = currentTab;
 syncIdleWatch();
 renderReadiness();
