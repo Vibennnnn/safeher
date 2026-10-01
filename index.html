@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="no-referrer">
-<script>try{if(localStorage.getItem('safeher-decoy')){document.documentElement.classList.add('decoy-boot');document.title='Notes';}}catch(e){}</script>
 <meta name="theme-color" content="#6C3FC5">
+<script>try{if(localStorage.getItem('safeher-decoy')){document.documentElement.classList.add('decoy-boot');document.title='Notes';var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=matchMedia('(prefers-color-scheme: dark)').matches?'#000000':'#f2f2f7';}}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SafeHer">
@@ -1988,6 +1988,7 @@ body[data-tab="home"] .sos-pill { display: none; }
 .decoy { position: fixed; inset: 0; z-index: 8000; display: none; overflow-y: auto; background: #f2f2f7; color: #1c1c1e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: calc(env(safe-area-inset-top) + 22px) 18px 40px; }
 body.decoy-on .decoy, body.bg-cover .decoy, html.decoy-boot .decoy { display: block; }
 body.bg-cover .decoy { z-index: 30000; }
+body.decoy-on .onboarding-overlay { visibility: hidden !important; }
 html.decoy-boot body > :not(.decoy) { visibility: hidden !important; }
 body.decoy-on .exit-now, body.bg-cover .exit-now { display: none; }
 body.decoy-on .countdown-overlay, body.bg-cover .countdown-overlay { visibility: hidden !important; } /* a pending fake call still rings over the decoy, that's its job */
@@ -2521,7 +2522,7 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
     </div>
     <div class="settings-note">
       <div class="settings-note-title">Exit now</div>
-      <p>Tap <b>Exit now</b> at the top left (or press Shift 3 times on a computer) to hide SafeHer behind a plain Notes screen. It stays on Notes, even if the app is reopened, until you come back: press and hold the word <b>Notes</b> for 2 seconds, or tap it 5 times. In a regular browser tab, Exit also opens weather.com.</p>
+      <p>Tap <b>Exit now</b> at the top left (or press Shift 3 times on a computer) to hide SafeHer behind a plain Notes screen. It stays on Notes, even if the app is reopened, until you come back: press and hold the word <b>Notes</b> for 2 seconds, or tap it 5 times. In a regular browser tab, Exit also opens weather.com. On iPhone, if the app is reopened while on Notes, Shake-to-SOS pauses until you come back.</p>
       <p>It can't delete your browser history, close other tabs, or remove SafeHer from your home screen or recent apps. Someone who checks your phone may still find it. If you think your phone is being watched, call the National DV Hotline at 1-800-799-7233 from a phone they can't check, like a friend's or a work phone.</p>
     </div>
     <button class="settings-link" type="button" onclick="clearActivity()">
@@ -2739,6 +2740,7 @@ function rememberPosition(pos) { if (!lastPosition || pos.timestamp >= lastPosit
 function freshPosition() { return lastPosition && Date.now() - lastPosition.timestamp < POS_FRESH_MS ? lastPosition : null; }
 // Only runs once location is already granted, so it never pops a prompt by itself.
 function startIdleWatch() {
+  if (typeof decoyActive !== 'undefined' && decoyActive) return; // a notes app doesn't use location
   if (idleWatchId !== null || !navigator.geolocation || document.visibilityState !== 'visible') return;
   idleWatchId = navigator.geolocation.watchPosition(rememberPosition, () => {}, { enableHighAccuracy: false, maximumAge: 60000, timeout: 30000 });
 }
@@ -2791,7 +2793,8 @@ function readyLocTap() {
 const REAL_TITLE = 'SafeHer — Your Safety Companion';
 const DECOY_KEY = 'safeher-decoy';
 let decoyActive = false, panelHiddenByExit = false, missedToast = null, deferredExpiry = null;
-let awaitingHoldRelease = false, exitIgnoreUntil = 0, focusBeforeExit = null;
+let awaitingHoldRelease = false, awaitingKeyRelease = false, exitIgnoreUntil = 0, focusBeforeExit = null, expiryAfterPanel = null;
+const MISSED_KEY = 'safeher-checkin-missed';
 const themeMeta = document.querySelector('meta[name="theme-color"]');
 const REAL_THEME_COLOR = themeMeta ? themeMeta.content : '';
 function isStandaloneApp() { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }
@@ -2872,22 +2875,35 @@ function leaveDecoy(how) {
   setAppHidden(false);
   syncIdleWatch();
   if (how === 'pointer') awaitingHoldRelease = true;
+  if (how === 'key') awaitingKeyRelease = true;
   const back = (focusBeforeExit && focusBeforeExit !== document.body && document.contains(focusBeforeExit) && focusBeforeExit.offsetParent !== null) ? focusBeforeExit : document.getElementById('exitNowBtn');
   focusBeforeExit = null;
   try { back.focus({ preventScroll: true }); } catch {}
-  if (panelHiddenByExit) { panelHiddenByExit = false; showSendPanelEl(); }
-  if (deferredExpiry) { const d = deferredExpiry; deferredExpiry = null; checkinExpired(d.pos, d.expiredAt); }
+  if (!deferredExpiry) {
+    try { const m = JSON.parse(localStorage.getItem(MISSED_KEY) || 'null'); if (m) deferredExpiry = { expiredAt: m.at, pos: m.lat != null ? { coords: { latitude: m.lat, longitude: m.lng, accuracy: m.acc }, timestamp: m.at } : null }; } catch {}
+  }
+  try { localStorage.removeItem(MISSED_KEY); } catch {}
+  const d = deferredExpiry; deferredExpiry = null;
+  if (panelHiddenByExit) {
+    // Her unsent alert comes back first; a held expiry follows once she closes it.
+    panelHiddenByExit = false; showSendPanelEl();
+    if (d) expiryAfterPanel = d;
+  } else if (d) checkinExpired(d.pos, d.expiredAt, true);
   if (missedToast) { const m = missedToast; missedToast = null; showToast(m, 5000); }
 }
 // Swallow only the click from the finger that ended the return-hold.
 document.addEventListener('pointerup', () => { if (awaitingHoldRelease) { awaitingHoldRelease = false; exitIgnoreUntil = Date.now() + 400; } }, true);
+document.addEventListener('pointercancel', () => { awaitingHoldRelease = false; }, true);
+// The key that ended a keyboard return is still down: swallow its repeats and release.
+document.addEventListener('keydown', e => { if (awaitingKeyRelease) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+document.addEventListener('keyup', e => { if (awaitingKeyRelease) { awaitingKeyRelease = false; e.preventDefault(); e.stopImmediatePropagation(); } }, true);
 // Coming back: hold "Notes" for 2 seconds, or tap it 5 times (for anyone who can't hold,
 // including screen readers that send a click instead of a press-and-hold).
 (function wireDecoyReturn() {
   const title = document.getElementById('decoyTitle');
   let holdTimer = null, taps = 0, tapTimer = null;
   const start = e => {
-    if (e.type === 'keydown') { if (!(e.key === 'Enter' || e.key === ' ') || e.repeat) return; e.preventDefault(); }
+    if (e.type === 'keydown') { if (!(e.key === 'Enter' || e.key === ' ')) return; e.preventDefault(); if (e.repeat) return; }
     clearTimeout(holdTimer); holdTimer = setTimeout(() => leaveDecoy(e.type === 'keydown' ? 'key' : 'pointer'), 2000);
   };
   const stop = () => { clearTimeout(holdTimer); holdTimer = null; };
@@ -2970,6 +2986,7 @@ function openSendPanel(kicker, title, body, uri, count) {
 }
 function showSendPanelEl() {
   const panel = document.getElementById('sendPanel');
+  if (typeof decoyActive !== 'undefined' && decoyActive) panelHiddenByExit = false;
   if (!panel.classList.contains('show')) sendPanelReturnFocus = document.activeElement;
   panel.classList.add('show');
   const first = [...panel.querySelectorAll('.send-actions a, .send-actions button')].find(e => !e.hidden);
@@ -2998,6 +3015,8 @@ function addLocationToPanel(body) {
 }
 function closeSendPanel() {
   document.getElementById('sendPanel').classList.remove('show'); pendingSmsUri = null;
+  if (decoyActive) { document.getElementById('alertBanner').classList.remove('show', 'hiding'); document.getElementById('toast').classList.remove('show', 'has-action'); }
+  if (expiryAfterPanel && !decoyActive) { const d = expiryAfterPanel; expiryAfterPanel = null; setTimeout(() => checkinExpired(d.pos, d.expiredAt, true), 350); }
   if (sendPanelReturnFocus && sendPanelReturnFocus.focus) sendPanelReturnFocus.focus({ preventScroll: true });
   sendPanelReturnFocus = null;
 }
@@ -3300,18 +3319,23 @@ function checkinTick() {
     checkinExpired(pos, null);
   }
 }
-function checkinExpired(pos, expiredAt) {
+function checkinExpired(pos, expiredAt, deferred) {
   // Under the decoy, the panel would only show whoever holds the phone (nothing can be
   // sent without her tap) and the buzz is a tell. Hold it until she comes back.
-  if (decoyActive) { deferredExpiry = { pos, expiredAt: expiredAt || Date.now() }; return; }
+  if (decoyActive && !deferred) {
+    deferredExpiry = { pos, expiredAt: expiredAt || Date.now() };
+    // Persist it: if the app is killed while disguised, the check-in record is already gone.
+    try { localStorage.setItem(MISSED_KEY, JSON.stringify({ at: deferredExpiry.expiredAt, lat: pos && pos.coords.latitude, lng: pos && pos.coords.longitude, acc: pos && pos.coords.accuracy })); } catch {}
+    return;
+  }
   haptic('timerExpiry');
-  logEvent('checkin_expire', expiredAt ? 'Check-in expired while the app was closed' : 'Check-in timer expired');
+  logEvent('checkin_expire', deferred ? 'Check-in expired while SafeHer was hidden' : expiredAt ? 'Check-in expired while the app was closed' : 'Check-in timer expired');
   updateStatusHero('alert');
   const when = expiredAt ? ` at ${new Date(expiredAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : '';
   const body = pos
     ? `I missed my check-in${when}. My last location: ${formatLocationUrl(pos)}`
     : `I missed my check-in${when}. Please call me or check on me.`;
-  showAlert(expiredAt ? 'Your check-in ran out while SafeHer was closed.' : 'Check-in time is up. Are you safe?', 10000);
+  showAlert(deferred ? 'Your check-in ran out while SafeHer was hidden.' : expiredAt ? 'Your check-in ran out while SafeHer was closed.' : 'Check-in time is up. Are you safe?', 10000);
   // On reopen there's no tap behind us, and opening Messages mid-load would stall
   // the page, so the panel's Send button is the path.
   handOffSms(body, 'Check-in expired', expiredAt ? 'Your check-in ran out' : 'Time is up', !expiredAt);
