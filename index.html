@@ -605,42 +605,6 @@ body.light-theme .toast { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
   margin-top: 4px;
 }
 
-/* ── Quick Actions Grid ──────────────────────────────────── */
-.quick-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.quick-btn {
-  background: var(--bg-card);
-  border: none;
-  border-radius: var(--radius-lg);
-  padding: 16px 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-  transition: background 0.15s;
-  touch-action: manipulation;
-}
-.quick-btn .q-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent-teal-light);
-  color: var(--brand-text);
-}
-.quick-btn .q-icon svg { width: 22px; height: 22px; }
-.quick-btn:active { background: var(--bg-card-hover); }
-
 /* ── Share Location Card ─────────────────────────────────── */
 .share-location-card {
   cursor: pointer;
@@ -1002,7 +966,7 @@ body.light-theme .toast { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
 .action-circle {
   width: 72px; height: 72px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: 0 8px 24px rgba(0,0,0,0.3);
 }
 .action-decline {
@@ -1095,86 +1059,6 @@ body.light-theme .toast { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
 }
 
 /* ── Contacts Tab ────────────────────────────────────────── */
-.contact-card {
-  /* Info gets the full top line; actions get their own row, so names stop truncating. */
-  display: grid;
-  grid-template-columns: 44px 52px minmax(0, 1fr);
-  grid-template-areas: "star avatar info" "actions actions actions";
-  align-items: center;
-  column-gap: 12px;
-  row-gap: 12px;
-  background: var(--bg-card);
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  margin-bottom: 10px;
-}
-.contact-avatar {
-  width: 52px; height: 52px;
-  border-radius: 50%;
-  background: var(--accent-teal-light);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; font-weight: 700; color: var(--brand-text);
-  flex-shrink: 0;
-}
-.contact-info { flex: 1; min-width: 0; }
-.contact-name {
-  font-size: 16px; font-weight: 600; color: var(--text-primary);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.contact-phone { font-size: 13px; color: var(--text-secondary); margin-top: 2px; font-variant-numeric: tabular-nums; }
-.contact-actions { grid-area: actions; display: flex; gap: 8px; }
-.contact-actions .contact-action-btn { flex: 1; width: auto; }
-.contact-actions .contact-delete { flex: 0 0 52px; }
-.contact-star { grid-area: star; }
-.contact-avatar { grid-area: avatar; }
-.contact-info { grid-area: info; }
-.contact-action-btn {
-  width: 44px; height: 44px;
-  border-radius: var(--radius-sm);
-  border: none;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  font-size: 16px;
-  transition: transform 0.12s var(--spring), background 0.15s;
-  touch-action: manipulation;
-  text-decoration: none;
-}
-.contact-action-btn svg { width: 16px; height: 16px; }
-.contact-call-btn { background: var(--call); color: #fff; }
-.contact-call-btn:active { transform: scale(0.9); }
-.contact-text-btn { background: var(--bg-elevated); color: var(--brand-text); }
-.contact-text-btn:active { transform: scale(0.9); }
-.contact-delete {
-  background: var(--bg-elevated);
-  border: none;
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  width: 44px; height: 44px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: transform 0.12s var(--spring);
-  flex-shrink: 0;
-  touch-action: manipulation;
-}
-.contact-delete svg { width: 16px; height: 16px; }
-.contact-delete:active { transform: scale(0.9); }
-.contact-star {
-  background: none; border: none; cursor: pointer;
-  padding: 12px; margin: -12px; flex-shrink: 0;
-  color: var(--text-ghost);
-  transition: color 0.2s, transform 0.15s var(--spring);
-  touch-action: manipulation;
-}
-.contact-star svg { width: 20px; height: 20px; }
-.contact-star.active { color: var(--accent-yellow); }
-.contact-star:active { transform: scale(1.3); }
-.emergency-badge {
-  display: inline-block; font-size: 9px; font-weight: 700;
-  background: var(--accent-yellow-subtle); color: var(--accent-yellow);
-  padding: 1px 6px; border-radius: 6px; margin-left: 6px;
-  vertical-align: middle; letter-spacing: 0.5px;
-}
 .form-input {
   background: var(--bg-elevated);
   border: 1px solid var(--border-medium);
@@ -1292,7 +1176,7 @@ body.light-theme .toast { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
   font-size: 11px;
   font-weight: 600;
   text-align: center;
-  transition: all 0.15s ease;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s ease;
   touch-action: manipulation;
   color: var(--text-secondary);
 }
@@ -1344,7 +1228,7 @@ body.light-theme .toast { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
 }
 .breathe-toggle:active { transform: scale(0.95); }
 
@@ -1365,7 +1249,7 @@ body.light-theme .toast { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
   align-items: center;
   justify-content: center;
   cursor: pointer; text-align: center;
-  transition: all 0.15s ease;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s ease;
   touch-action: manipulation;
 }
 .delay-btn:active { background: var(--bg-card-hover); }
@@ -1490,7 +1374,7 @@ body.light-theme .toast { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   font-size: 12px; font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
   display: flex; align-items: center; gap: 6px;
 }
 .shake-toggle svg { width: 14px; height: 14px; }
@@ -1700,7 +1584,6 @@ body.light-theme .resource-title { color: var(--text-primary); }
 body.light-theme .contact-phone,
 body.light-theme .resource-detail { color: var(--text-secondary); }
 body.light-theme .sos-hold-label { color: var(--accent-red-dark); }
-body.light-theme .emergency-badge { color: #7a5c00; }
 body.light-theme .header-sub.timer-active { color: var(--accent-teal-bright); }
 body.light-theme .send-kicker { color: var(--accent-red-dark); }
 body.light-theme .checkin-time.warning { color: #b45309; }
@@ -1708,13 +1591,11 @@ body.light-theme .safety-level-btn[data-level="1"].selected { color: #c4221a; }
 body.light-theme .safety-level-btn[data-level="2"].selected { color: #a85b00; }
 body.light-theme .safety-level-btn[data-level="3"].selected { color: #7a6400; }
 body.light-theme .safety-level-btn[data-level="4"].selected { color: #1a7f37; }
-body.light-theme .contact-star.active { color: var(--accent-yellow); }
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (min-width: 768px) {
   #app { max-width: 480px; }
   .bottom-nav { max-width: 480px; }
-  .quick-btn:hover { background: var(--bg-card-hover); border-color: var(--border-medium); }
   .nav-btn:hover { color: var(--text-secondary); }
 }
 @media (min-width: 1024px) {
@@ -1830,6 +1711,71 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
 .ready-chip, .shake-toggle, .breathe-toggle { position: relative; }
 .ready-chip::after, .shake-toggle::after, .breathe-toggle::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 44px; transform: translateY(-50%); }
 
+/* ── Round 2: quieter chrome, one name per feature ─────────
+   Type scale: 34 title / 17 / 15 body / 13 secondary / 11 tab labels. */
+:root { --seg-on: #3a3b45; color-scheme: dark; }
+body.light-theme { --seg-on: #ffffff; color-scheme: light; }
+body { -webkit-tap-highlight-color: transparent; } /* pressed states come from :active */
+.section-header, .send-title, .onboard-title { text-wrap: balance; }
+button.share-location-card { display: block; width: 100%; border: none; font: inherit; color: inherit; text-align: left; }
+.tab-content { padding-top: 12px; }
+.section-header { font-size: 34px; line-height: 41px; letter-spacing: -0.4px; margin: 0 0 16px; }
+body[data-tab]:not([data-tab="home"]) .header-title { display: none; } /* the page title already names the screen */
+.exit-now { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-medium); box-shadow: none; }
+
+.ready-row { flex-wrap: nowrap; }
+.ready-chip { padding: 0 12px; white-space: nowrap; }
+.sos-hero-track { stroke: var(--bg-elevated); }
+
+.card.note { background: none; padding: 4px 4px 0; }
+.card.note .card-title, .card.note .tip-title { font-size: 15px; color: var(--text-primary); }
+
+/* Fake call: name presets as pills, delay as one segmented control */
+.preset-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.preset-btn { border: none; background: var(--bg-elevated); border-radius: var(--radius-pill); padding: 0 16px; font-size: 15px; color: var(--text-primary); }
+.preset-btn.selected { background: var(--accent-teal-light); color: var(--brand-text); }
+.delay-options { gap: 2px; padding: 3px; background: var(--bg-elevated); border-radius: 11px; }
+.delay-btn { border: none; background: transparent; border-radius: 8px; font-size: 14px; color: var(--text-secondary); }
+.delay-btn.selected { border: none; background: var(--seg-on); color: var(--text-primary); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+.delay-btn:active { background: var(--bg-card-hover); }
+
+/* Contacts */
+.contact-card {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px 44px;
+  grid-template-areas: "avatar info text call" "meta meta meta meta";
+  align-items: center;
+  column-gap: 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px 0;
+  margin-bottom: 10px;
+}
+.contact-avatar { grid-area: avatar; width: 44px; height: 44px; border-radius: 50%; background: var(--accent-teal-light); color: var(--brand-text); display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600; }
+.contact-info { grid-area: info; min-width: 0; }
+.contact-name { font-size: 17px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.contact-phone { font-size: 13px; color: var(--text-secondary); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.contact-action-btn { width: 44px; height: 44px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; text-decoration: none; touch-action: manipulation; }
+.contact-action-btn svg { width: 18px; height: 18px; }
+.contact-action-btn:active { opacity: 0.75; }
+.contact-text-btn { grid-area: text; background: var(--bg-elevated); color: var(--brand-text); }
+.contact-call-btn { grid-area: call; background: var(--call); color: #fff; }
+.contact-meta { grid-area: meta; display: flex; justify-content: space-between; margin-top: 10px; border-top: 1px solid var(--border-faint); }
+.contact-star, .contact-remove { min-height: 44px; display: inline-flex; align-items: center; gap: 6px; background: none; border: none; padding: 0 2px; margin: 0; font: 500 13px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text-secondary); cursor: pointer; touch-action: manipulation; }
+.contact-star svg { width: 16px; height: 16px; fill: none; }
+.contact-star.active { color: var(--brand-text); }
+.contact-star.active svg { fill: currentColor; }
+.contact-remove:active, .contact-star:active { opacity: 0.6; }
+
+/* Resources */
+#bodyHotlines .resource-icon { display: none; }
+.resource-text-btn { background: var(--brand); }
+
+/* Tab bar: equal slots, bigger icons, active = color + weight */
+.nav-btn { flex: 1; min-width: 0; padding: 6px 2px; font-size: 11px; }
+.nav-btn .nav-icon, .nav-btn .nav-icon svg { width: 24px; height: 24px; }
+.nav-btn.active { font-weight: 600; }
+
 /* ── Reduced Motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -1887,53 +1833,30 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
     </div>
 
     <div class="card exit-tip" id="exitTip" hidden>
-      <div class="exit-tip-text"><b>New: Exit now.</b> Tap it at the top left to instantly hide SafeHer behind a plain Notes screen. To come back, hold the word <b>Notes</b> for 2 seconds.</div>
+      <div class="exit-tip-text"><b>Exit now</b> hides SafeHer behind a plain Notes screen. To come back, hold the word <b>Notes</b> for 2 seconds.</div>
       <button class="exit-tip-close" type="button" aria-label="Dismiss tip" onclick="dismissExitTip()">×</button>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="card" style="background:transparent;border:none;box-shadow:none;padding:0;">
-      <div class="card-title">Quick Actions</div>
-      <div class="quick-grid">
-        <button class="quick-btn" onclick="switchTab('checkin')">
-          <span class="q-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-          Check-In
-        </button>
-        <button class="quick-btn" onclick="switchTab('fakecall')">
-          <span class="q-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></span>
-          Fake Call
-        </button>
-        <button class="quick-btn" onclick="switchTab('contacts')">
-          <span class="q-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
-          Contacts
-        </button>
-        <button class="quick-btn" onclick="switchTab('resources')">
-          <span class="q-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span>
-          Resources
-        </button>
-      </div>
-    </div>
-
     <!-- Share Location -->
-    <div class="card share-location-card card-action" onclick="shareLocation()">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="share-loc-icon">
+    <button type="button" class="card share-location-card card-action" onclick="shareLocation()">
+      <span style="display:flex;align-items:center;gap:14px;">
+        <span class="share-loc-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        </div>
-        <div style="flex:1;">
-          <div style="font-size:15px;font-weight:600;">Share My Location</div>
-          <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">Tap to send your GPS coordinates</div>
-        </div>
+        </span>
+        <span style="flex:1;">
+          <span style="display:block;font-size:15px;font-weight:600;">Share my location</span>
+          <span style="display:block;font-size:13px;color:var(--text-tertiary);margin-top:2px;">Tap to send your GPS coordinates</span>
+        </span>
         <svg style="width:18px;height:18px;color:var(--text-faint);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-    </div>
+      </span>
+    </button>
 
     <!-- Safety Tip -->
     <div class="gradient-border-card">
       <div class="gradient-border-inner">
         <div class="tip-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 019 14"/></svg>
-          Safety Tip of the Day
+          Tip of the day
         </div>
         <div class="tip-text" id="dailyTip"></div>
       </div>
@@ -1963,7 +1886,7 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
 
     <div class="section-header">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      Check-In Timer
+      Check-in
     </div>
 
     <div class="card">
@@ -1973,9 +1896,9 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
             <circle class="checkin-ring-bg" cx="100" cy="100" r="88"/>
             <circle class="checkin-ring-fill" cx="100" cy="100" r="88" id="checkinRingFill"/>
           </svg>
-          <div class="checkin-time" id="checkinTimeDisplay">00:00</div>
+          <div class="checkin-time" id="checkinTimeDisplay">10:00</div>
         </div>
-        <div class="checkin-status" id="checkinStatus" role="status" aria-live="polite" aria-atomic="true">Set a timer and tap Start</div>
+        <div class="checkin-status" id="checkinStatus" role="status" aria-live="polite" aria-atomic="true">Pick how long, then start</div>
       </div>
       <div class="checkin-collapsible" id="checkinCollapsible">
         <div class="checkin-controls">
@@ -1990,15 +1913,15 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
           <input type="hidden" id="checkinDuration" value="10">
         </div>
       </div>
-      <button class="btn btn-teal" id="checkinBtn" onclick="toggleCheckin()" style="margin-top:14px;">Start Timer</button>
+      <button class="btn btn-teal" id="checkinBtn" onclick="toggleCheckin()" style="margin-top:14px;">Start check-in</button>
     </div>
 
-    <div class="card checkin-collapsible-card" id="checkinHowItWorks">
-      <div class="card-title">How It Works</div>
+    <div class="card note checkin-collapsible-card" id="checkinHowItWorks">
+      <div class="card-title">How it works</div>
       <ul class="step-list">
         <li class="step-item"><div class="step-num">1</div><div class="step-text">Choose how long you expect to be in an unsafe or uncertain situation.</div></li>
-        <li class="step-item"><div class="step-num">2</div><div class="step-text">Tap <strong>Start Timer</strong>. The countdown begins automatically.</div></li>
-        <li class="step-item"><div class="step-num">3</div><div class="step-text">When you're safe, tap <strong>"I'm Safe"</strong> to cancel the timer.</div></li>
+        <li class="step-item"><div class="step-num">2</div><div class="step-text">Tap <strong>Start check-in</strong>. The countdown begins.</div></li>
+        <li class="step-item"><div class="step-num">3</div><div class="step-text">When you're safe, tap <strong>I'm safe, stop</strong>.</div></li>
         <li class="step-item"><div class="step-num">4</div><div class="step-text">If time runs out, SafeHer opens a text to your emergency contacts with your last location, ready to send. It can't send texts by itself, so keep SafeHer open.</div></li>
       </ul>
     </div>
@@ -2010,12 +1933,12 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
 
     <div class="section-header">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-      Fake Call
+      Fake call
     </div>
 
     <div class="card">
-      <div class="card-title">Caller Name</div>
-      <input class="caller-input" id="callerNameInput" type="text" placeholder="e.g. Mom, Alex, Dr. Smith" aria-label="Caller name" maxlength="40">
+      <div class="card-title">Caller name</div>
+      <input class="caller-input" id="callerNameInput" type="text" placeholder="e.g. Mom, Alex, Dr. Smith" aria-label="Caller name" maxlength="40" autocomplete="off">
       <div class="preset-grid">
         <button class="preset-btn" onclick="setPreset('Mom')" aria-pressed="false">Mom</button>
         <button class="preset-btn" onclick="setPreset('Dad')" aria-pressed="false">Dad</button>
@@ -2027,7 +1950,7 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
     </div>
 
     <div class="card">
-      <div class="card-title">Call Delay</div>
+      <div class="card-title">Call delay</div>
       <div class="delay-options">
         <button class="delay-btn selected" onclick="setCallDelay(0)" aria-pressed="true">Now</button>
         <button class="delay-btn" onclick="setCallDelay(5)" aria-pressed="false">5 sec</button>
@@ -2038,14 +1961,14 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
       <div class="delay-status" id="delayStatus"></div>
       <button class="btn btn-phone-green" id="fakeCallBtn" onclick="startFakeCall()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-        Start Fake Call
+        Start fake call
       </button>
     </div>
 
-    <div class="card">
+    <div class="card note">
       <div class="tip-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        What Are Fake Calls?
+        What a fake call is for
       </div>
       <div class="tip-text">A fake call simulates an incoming phone call so you can excuse yourself from an uncomfortable situation. When you receive the "call," you can pretend to answer and walk away safely.</div>
     </div>
@@ -2057,22 +1980,22 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
 
     <div class="section-header">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-      Safety Contacts
+      Contacts
     </div>
 
     <div id="contactsList"></div>
 
     <div class="card">
-      <div class="card-title">Add New Contact</div>
+      <div class="card-title">Add a contact</div>
       <div class="contact-form-row">
-        <input class="form-input" id="newContactName"  type="text"  placeholder="Contact name"   aria-label="Contact name"  maxlength="50">
-        <input class="form-input" id="newContactPhone" type="tel"   placeholder="Phone number"   aria-label="Phone number"  maxlength="20">
+        <input class="form-input" id="newContactName"  type="text"  placeholder="Contact name"   aria-label="Contact name" autocomplete="off"  maxlength="50">
+        <input class="form-input" id="newContactPhone" type="tel"   placeholder="Phone number"   aria-label="Phone number" autocomplete="off" inputmode="tel"  maxlength="20">
       </div>
-      <button class="btn btn-purple" onclick="addContact()">Add Contact</button>
+      <button class="btn btn-purple" onclick="addContact()">Add contact</button>
     </div>
 
     <div class="card">
-      <div class="card-title">Backup Contacts</div>
+      <div class="card-title">Back up contacts</div>
       <div class="tip-text" style="margin-bottom:12px;">Save your contacts to a file so they survive a reinstall or a new phone, or restore them from a previous backup.</div>
       <div class="contact-form-row">
         <button class="btn btn-ghost" onclick="exportContacts()">Export</button>
@@ -2096,7 +2019,7 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
       <div class="accordion-header expanded" onclick="toggleAccordion('hotlines')" onkeydown="accordionKeydown(event,'hotlines')" role="button" tabindex="0" aria-expanded="true" aria-controls="bodyHotlines">
         <div class="accordion-header-left">
           <div class="accordion-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-          Emergency Hotlines
+          Emergency hotlines
         </div>
         <div class="accordion-chevron rotated" id="chevronHotlines"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
       </div>
@@ -2105,24 +2028,24 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
           <div class="resource-item">
             <div class="resource-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
             <div class="resource-info">
-              <div class="resource-title">Emergency Services</div>
-              <div class="resource-detail"><a href="tel:911" class="resource-link">911</a> — Police, Fire, Medical</div>
+              <div class="resource-title">911</div>
+              <div class="resource-detail">Police, fire, medical</div>
             </div>
             <a href="tel:911" class="resource-call-btn" aria-label="Call 911"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></a>
           </div>
           <div class="resource-item">
             <div class="resource-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
             <div class="resource-info">
-              <div class="resource-title">RAINN Sexual Assault Hotline</div>
-              <div class="resource-detail"><a href="tel:18006564673" class="resource-link">1-800-656-4673</a> · 24/7 confidential</div>
+              <div class="resource-title">RAINN</div>
+              <div class="resource-detail">Sexual assault, 24/7, confidential<br><a href="tel:18006564673" class="resource-link">1-800-656-4673</a></div>
             </div>
             <a href="tel:18006564673" class="resource-call-btn" aria-label="Call RAINN"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></a>
           </div>
           <div class="resource-item">
             <div class="resource-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
             <div class="resource-info">
-              <div class="resource-title">National DV Hotline</div>
-              <div class="resource-detail"><a href="tel:18007997233" class="resource-link">1-800-799-7233</a> · Text START to 88788</div>
+              <div class="resource-title">Domestic Violence Hotline</div>
+              <div class="resource-detail">Call <a href="tel:18007997233" class="resource-link">1-800-799-7233</a> or text START to 88788</div>
             </div>
             <a href="tel:18007997233" class="resource-call-btn" aria-label="Call DV Hotline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></a>
           </div>
@@ -2130,8 +2053,9 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
             <div class="resource-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
             <div class="resource-info">
               <div class="resource-title">Crisis Text Line</div>
-              <div class="resource-detail">Text <strong>HOME</strong> to <a href="sms:741741&body=HOME" class="resource-link">741741</a> · Free, 24/7</div>
+              <div class="resource-detail">Text HOME to 741741, free, 24/7</div>
             </div>
+            <a href="sms:741741&body=HOME" class="resource-call-btn resource-text-btn" aria-label="Text Crisis Text Line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></a>
           </div>
         </div>
       </div>
@@ -2142,7 +2066,7 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
       <div class="accordion-header" onclick="toggleAccordion('tips')" onkeydown="accordionKeydown(event,'tips')" role="button" tabindex="0" aria-expanded="false" aria-controls="bodyTips">
         <div class="accordion-header-left">
           <div class="accordion-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 019 14"/></svg></div>
-          Safety Tips
+          Safety tips
         </div>
         <div class="accordion-chevron" id="chevronTips"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
       </div>
@@ -2173,7 +2097,7 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
       <div class="accordion-header" onclick="toggleAccordion('check')" onkeydown="accordionKeydown(event,'check')" role="button" tabindex="0" aria-expanded="false" aria-controls="bodyCheck">
         <div class="accordion-header-left">
           <div class="accordion-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-          Quick Safety Check
+          Quick safety check
         </div>
         <div class="accordion-chevron" id="chevronCheck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
       </div>
@@ -2197,7 +2121,7 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
       <div class="accordion-header" onclick="toggleAccordion('breathe')" onkeydown="accordionKeydown(event,'breathe')" role="button" tabindex="0" aria-expanded="false" aria-controls="bodyBreathe">
         <div class="accordion-header-left">
           <div class="accordion-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1111 8H2"/><path d="M12.59 19.41A2 2 0 1014 16H2"/><path d="M17.73 7.73A2.5 2.5 0 1119.5 12H2"/></svg></div>
-          Breathing Exercise
+          Breathing exercise
         </div>
         <div class="accordion-chevron" id="chevronBreathe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
       </div>
@@ -2222,18 +2146,18 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Home
     </button>
     <button class="nav-btn" id="nav-checkin" role="tab" aria-selected="false" aria-controls="tab-checkin" onclick="switchTab('checkin')">
-      <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Timer
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>Check-in
       <span class="timer-badge" id="timerBadge"></span>
     </button>
 
     <button class="nav-btn" id="nav-fakecall" role="tab" aria-selected="false" aria-controls="tab-fakecall" onclick="switchTab('fakecall')">
-      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></span>Call
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></span>Fake call
     </button>
     <button class="nav-btn" id="nav-contacts" role="tab" aria-selected="false" aria-controls="tab-contacts" onclick="switchTab('contacts')">
       <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>Contacts
     </button>
     <button class="nav-btn" id="nav-resources" role="tab" aria-selected="false" aria-controls="tab-resources" onclick="switchTab('resources')">
-      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span>Help
+      <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></span>Resources
     </button>
   </nav>
 
@@ -2257,7 +2181,7 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
     </svg>
     <div class="countdown-number" id="countdownNumber">5</div>
   </div>
-  <div class="countdown-label">Call incoming...</div>
+  <div class="countdown-label">Call incoming…</div>
 </div>
 
 <!-- Toast -->
@@ -2288,10 +2212,10 @@ button.settings-link { width: 100%; background: none; border: none; font: inheri
       </div>
       <button class="toggle-switch" id="shakeToggleSwitch" onclick="toggleShakeSOS()" role="switch" aria-checked="false" aria-label="Shake-to-SOS"></button>
     </div>
-    <div class="settings-link" onclick="switchTab('resources');toggleSettings();">
+    <button type="button" class="settings-link" onclick="switchTab('resources');toggleSettings();">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
-      Resources & Hotlines
-    </div>
+      Resources and hotlines
+    </button>
     <div class="settings-note">
       <div class="settings-note-title">Exit now</div>
       <p>Tap <b>Exit now</b> at the top left (or press Shift 3 times on a computer) to hide SafeHer behind a plain Notes screen. It stays on Notes, even if the app is reopened, until you come back: press and hold the word <b>Notes</b> for 2 seconds, or tap it 5 times. In a regular browser tab, Exit also opens weather.com. On iPhone, if the app is reopened while on Notes, Shake-to-SOS pauses until you come back.</p>
@@ -2537,15 +2461,15 @@ function setChip(id, textId, state, text) {
 function renderReadiness() {
   const pos = freshPosition();
   let locOk = false;
-  if (pos) { locOk = true; setChip('readyLoc', 'readyLocText', 'ok', `Location ready · ±${Math.max(1, Math.round(pos.coords.accuracy || 0))} m`); }
+  if (pos) { locOk = true; setChip('readyLoc', 'readyLocText', 'ok', `Location ±${Math.max(1, Math.round(pos.coords.accuracy || 0))} m`); }
   else if (geoPermState === 'denied') setChip('readyLoc', 'readyLocText', 'warn', 'Location blocked');
   else if (geoPermState === 'granted') setChip('readyLoc', 'readyLocText', '', 'Finding location…');
-  else setChip('readyLoc', 'readyLocText', 'warn', 'Turn on location');
+  else setChip('readyLoc', 'readyLocText', 'warn', 'Location off');
   const contacts = loadContacts();
   const phones = alertPhones();
   const emergency = contacts.filter(c => c.emergency && PHONE_RE.test(cleanPhone(c.phone)));
-  if (!phones.length) setChip('readyContacts', 'readyContactsText', 'warn', 'Add an SOS contact');
-  else setChip('readyContacts', 'readyContactsText', 'ok', `SOS ready · ${phones.length} contact${phones.length === 1 ? '' : 's'}`); // no names on the first screen
+  if (!phones.length) setChip('readyContacts', 'readyContactsText', 'warn', 'No SOS contact');
+  else setChip('readyContacts', 'readyContactsText', 'ok', `${phones.length} SOS contact${phones.length === 1 ? '' : 's'}`); // no names on the first screen
   const sub = document.getElementById('statusSubtext');
   if (sub && document.getElementById('statusText').textContent === 'All clear') sub.textContent = (locOk && phones.length) ? 'Ready if you need it' : 'Finish setup below';
 }
@@ -3052,7 +2976,7 @@ function startCheckin(resumeSeconds) {
   updateCheckinRing(1);
   document.getElementById('checkinStatus').textContent = 'Timer running';
   document.getElementById('checkinDuration').disabled = true;
-  document.getElementById('checkinBtn').textContent = "I'm Safe — Stop";
+  document.getElementById('checkinBtn').textContent = "I'm safe, stop";
   document.getElementById('checkinBtn').className = 'btn btn-red';
   document.getElementById('checkinBtn').style.marginTop = '14px';
   // Immersive mode
@@ -3118,12 +3042,12 @@ function stopCheckin(safe) {
   if (checkinWatchId !== null) { navigator.geolocation.clearWatch(checkinWatchId); checkinWatchId = null; }
   localStorage.removeItem('safeher-checkin');
   const display = document.getElementById('checkinTimeDisplay');
-  display.textContent = '00:00'; display.classList.remove('running','expired','warning');
+  display.textContent = idleClock(); display.classList.remove('running','expired','warning');
   updateCheckinRing(0);
   document.getElementById('checkinRingFill').classList.remove('expired-ring','warning-ring');
   document.getElementById('checkinStatus').textContent = safe ? 'Glad you\'re safe!' : 'Timer ended';
   document.getElementById('checkinDuration').disabled = false;
-  document.getElementById('checkinBtn').textContent = 'Start Timer';
+  document.getElementById('checkinBtn').textContent = 'Start check-in';
   document.getElementById('checkinBtn').className = 'btn btn-teal';
   document.getElementById('checkinDisplay').classList.remove('immersive');
   document.getElementById('checkinCollapsible').classList.remove('hidden');
@@ -3167,12 +3091,13 @@ function startFakeCall() {
     cdNumber.textContent = remaining;
     cdOverlay.classList.add('active');
     const btn = document.getElementById('fakeCallBtn');
-    btn.textContent = 'Cancel Pending Call';
-    btn.onclick = function(){ clearInterval(countdownInterval); countdownInterval=null; cdOverlay.classList.remove('active'); btn.textContent='Start Fake Call'; btn.onclick=startFakeCall; document.getElementById('delayStatus').textContent=''; };
+    const startLabel = btn.innerHTML; // keep the phone icon for the reset
+    btn.textContent = 'Cancel call';
+    btn.onclick = function(){ clearInterval(countdownInterval); countdownInterval=null; cdOverlay.classList.remove('active'); btn.innerHTML=startLabel; btn.onclick=startFakeCall; document.getElementById('delayStatus').textContent=''; };
     countdownInterval = setInterval(() => {
       remaining = Math.max(0, Math.ceil((ringAt - Date.now()) / 1000));
       cdNumber.textContent = remaining;
-      if (remaining <= 0) { clearInterval(countdownInterval); countdownInterval=null; cdOverlay.classList.remove('active'); btn.textContent='Start Fake Call'; btn.onclick=startFakeCall; document.getElementById('delayStatus').textContent=''; triggerFakeCall(name); }
+      if (remaining <= 0) { clearInterval(countdownInterval); countdownInterval=null; cdOverlay.classList.remove('active'); btn.innerHTML=startLabel; btn.onclick=startFakeCall; document.getElementById('delayStatus').textContent=''; triggerFakeCall(name); }
     }, 1000);
     return;
   }
@@ -3237,20 +3162,19 @@ function renderContacts() {
   }
   const phoneSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>';
   const msgSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>';
-  const xSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
   const starSvg = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
   container.innerHTML = contacts.map((c, i) => `
     <div class="contact-card${c.emergency?' emergency':''}">
-      <button class="contact-star${c.emergency?' active':''}" onclick="toggleEmergency(${i})" aria-label="${c.emergency?'Remove from':'Mark as'} emergency">${starSvg}</button>
-      <div class="contact-avatar">${escapeHtml(c.name.charAt(0).toUpperCase())}</div>
+      <div class="contact-avatar" aria-hidden="true">${escapeHtml(c.name.charAt(0).toUpperCase())}</div>
       <div class="contact-info">
-        <div class="contact-name">${escapeHtml(c.name)}${c.emergency?' <span class="emergency-badge">SOS</span>':''}</div>
+        <div class="contact-name">${escapeHtml(c.name)}</div>
         <div class="contact-phone">${escapeHtml(c.phone)}</div>
       </div>
-      <div class="contact-actions">
-        <a class="contact-action-btn contact-call-btn" href="tel:${escapeHtml(c.phone)}" aria-label="Call">${phoneSvg}</a>
-        <a class="contact-action-btn contact-text-btn" href="sms:${escapeHtml(c.phone)}" aria-label="Text">${msgSvg}</a>
-        <button class="contact-action-btn contact-delete" onclick="deleteContact(${i})" aria-label="Delete">${xSvg}</button>
+      <a class="contact-action-btn contact-text-btn" href="sms:${escapeHtml(c.phone)}" aria-label="Text ${escapeHtml(c.name)}">${msgSvg}</a>
+      <a class="contact-action-btn contact-call-btn" href="tel:${escapeHtml(c.phone)}" aria-label="Call ${escapeHtml(c.name)}">${phoneSvg}</a>
+      <div class="contact-meta">
+        <button class="contact-star${c.emergency?' active':''}" onclick="toggleEmergency(${i})" aria-pressed="${c.emergency}">${starSvg}<span>${c.emergency?'SOS contact':'Add to SOS'}</span></button>
+        <button class="contact-remove" onclick="deleteContact(${i})" aria-label="Remove ${escapeHtml(c.name)}">Remove</button>
       </div>
     </div>`).join('');
 }
@@ -3317,7 +3241,7 @@ function shareLocation() {
   const pos = freshPosition();
   if (pos) { sharePosition(pos); return; }
   if (!navigator.geolocation) { showToast('Location not available'); return; }
-  showToast('Getting your location...', 10000);
+  showToast('Getting your location…', 10000);
   navigator.geolocation.getCurrentPosition(p => {
     rememberPosition(p);
     // The original tap has expired by now, so sharing needs a fresh one.
@@ -3407,14 +3331,14 @@ function toggleBreathe() {
   btn.textContent = 'Stop';
   function cycle() {
     circle.className = 'breathe-circle inhale';
-    text.textContent = 'Breathe in...';
+    text.textContent = 'Breathe in…';
     setTimeout(() => {
       if (!breatheRunning) return;
-      text.textContent = 'Hold...';
+      text.textContent = 'Hold…';
       setTimeout(() => {
         if (!breatheRunning) return;
         circle.className = 'breathe-circle exhale';
-        text.textContent = 'Breathe out...';
+        text.textContent = 'Breathe out…';
         setTimeout(() => {
           if (!breatheRunning) return;
           cycle();
@@ -3649,12 +3573,17 @@ renderActivityLog();
 // ═══════════════════════════════════════════════════════════
 const STEP_VALUES = [1, 2, 5, 10, 15, 20, 30, 45, 60, 90, 120];
 let stepperIdx = 3; // default 10 min
+function idleClock() { // the chosen duration, shown on the ring before Start
+  const m = Number(document.getElementById('checkinDuration').value) || 10;
+  return m >= 60 ? `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}:00` : `${String(m).padStart(2, '0')}:00`;
+}
 function stepDuration(dir) {
   if (checkinRunning) return;
   stepperIdx = Math.max(0, Math.min(STEP_VALUES.length - 1, stepperIdx + dir));
   const val = STEP_VALUES[stepperIdx];
   document.getElementById('stepperDisplay').textContent = val < 60 ? val + ' min' : (val === 60 ? '1 hr' : (val / 60) + ' hr');
   document.getElementById('checkinDuration').value = val;
+  document.getElementById('checkinTimeDisplay').textContent = idleClock();
   document.getElementById('stepperMinus').disabled = stepperIdx === 0;
   document.getElementById('stepperPlus').disabled = stepperIdx === STEP_VALUES.length - 1;
 }
