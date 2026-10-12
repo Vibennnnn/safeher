@@ -2379,7 +2379,7 @@ const SHAKE_ENABLED_KEY = 'safeher-shake-sos';
 
 let currentTab = 'home';
 const TAB_ORDER = ['home','checkin','fakecall','contacts','resources'];
-let sosHolding = false, sosProgress = 0, sosInterval = null;
+let sosHolding = false, sosProgress = 0, sosInterval = null, sosStartedAt = 0, sosQuarter = 0;
 const SOS_DURATION = 2000, SOS_STEP_MS = 50;
 const SOS_CIRCUMFERENCE = 2 * Math.PI * 92; // r=92 for the home hero ring
 
@@ -2824,15 +2824,15 @@ function sosStart(e) {
   e.preventDefault();
   sosFiredThisHold = false; // a mouse release can land on the send panel instead of this button
   if (sosHolding) return;
-  sosHolding = true; sosProgress = 0;
+  sosHolding = true; sosProgress = 0; sosStartedAt = performance.now(); sosQuarter = 0;
   (e.currentTarget && e.currentTarget.classList ? e.currentTarget : sosBtn).classList.add('holding');
   sosVignette.classList.add('active');
   updateRing(0);
   sosInterval = setInterval(() => {
-    sosProgress += SOS_STEP_MS;
+    sosProgress = performance.now() - sosStartedAt; // real time: a busy phone delays ticks, and 2 s held must mean 2 s
     const frac = Math.min(sosProgress / SOS_DURATION, 1);
     updateRing(frac);
-    if (Math.round(frac*4) > Math.round((sosProgress-SOS_STEP_MS)/SOS_DURATION*4)) haptic('sosProgress');
+    if (Math.floor(frac * 4) > sosQuarter) { sosQuarter = Math.floor(frac * 4); haptic('sosProgress'); }
     if (sosProgress >= SOS_DURATION) { clearInterval(sosInterval); sosInterval=null; sosTrigger(); }
   }, SOS_STEP_MS);
 }
@@ -2847,6 +2847,10 @@ function sosEnd(e) {
     return;
   }
   if (!sosHolding) return;
+  if (performance.now() - sosStartedAt >= SOS_DURATION) { // held long enough but the last tick hadn't run yet
+    if (sosInterval) { clearInterval(sosInterval); sosInterval=null; }
+    sosTrigger(); return sosEnd(e); // fires, then this release (a real gesture) opens Messages
+  }
   sosHolding = false;
   if (sosInterval) { clearInterval(sosInterval); sosInterval=null; }
   sosHoldEls.forEach(el => el.classList.remove('holding'));
