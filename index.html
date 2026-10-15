@@ -11,6 +11,8 @@
 <meta name="apple-mobile-web-app-title" content="SafeHer">
 <meta name="description" content="Your personal safety companion — SOS alerts, check-in timer, and crisis resources.">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>SafeHer — Your Safety Companion</title>
 <style>
 /* ── Design Tokens ───────────────────────────────────────── */
@@ -1921,7 +1923,7 @@ body[data-tab]:not([data-tab="home"]) .header-title { display: none; } /* the pa
               <div class="resource-title">Crisis Text Line</div>
               <div class="resource-detail">Text HOME to 741741, free, 24/7</div>
             </div>
-            <a href="sms:741741&body=HOME" class="resource-call-btn resource-text-btn" aria-label="Text Crisis Text Line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></a>
+            <a href="sms:741741?&body=HOME" class="resource-call-btn resource-text-btn" aria-label="Text Crisis Text Line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></a>
           </div>
         </div>
       </div>
@@ -2118,7 +2120,7 @@ body[data-tab]:not([data-tab="home"]) .header-title { display: none; } /* the pa
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
     </div>
     <div class="onboard-title">Add Trusted Contacts</div>
-    <div class="onboard-desc">Add people you trust. Star them as emergency contacts to receive SOS alerts and check-in notifications.</div>
+    <div class="onboard-desc">Add people you trust. Star the ones SafeHer should text. Only starred contacts get your SOS and check-in messages, and you tap Send.</div>
   </div>
   <div class="onboard-step" id="onboardStep3">
     <div class="onboard-icon teal">
@@ -2491,10 +2493,8 @@ try { if (localStorage.getItem(DECOY_KEY)) showDecoy(); } catch {}
 //  SMS HANDOFF — with a tappable backup every time
 // ═══════════════════════════════════════════════════════════
 function alertPhones() {
-  const contacts = loadContacts();
-  const emergency = contacts.filter(c => c.emergency);
-  const pool = emergency.length ? emergency : contacts;
-  return pool.map(c => cleanPhone(c.phone)).filter(p => PHONE_RE.test(p));
+  // Only people she starred. Never fall back to everyone: that list can include the person she's afraid of.
+  return loadContacts().filter(c => c.emergency).map(c => cleanPhone(c.phone)).filter(p => PHONE_RE.test(p));
 }
 function smsUri(phones, body) { return `sms:${phones.join(',')}?&body=${encodeURIComponent(body)}`; }
 // A browser can silently block sms: when it isn't opened straight from a tap,
@@ -2529,7 +2529,9 @@ function showSendPanelEl() {
 function showNoContactsPanel(kicker) {
   document.getElementById('sendKicker').textContent = kicker;
   document.getElementById('sendTitle').textContent = 'No one to text yet';
-  document.getElementById('sendNote').textContent = "You don't have any emergency contacts with a valid number. If you're in danger, call 911 now.";
+  document.getElementById('sendNote').textContent = loadContacts().length
+    ? "None of your contacts is set for SOS. Star someone in Contacts. If you're in danger, call 911 now."
+    : "You don't have any SOS contacts with a valid number. If you're in danger, call 911 now.";
   document.getElementById('sendPreview').hidden = true;
   document.getElementById('sendLoc').classList.remove('show');
   document.getElementById('sendSmsBtn').hidden = true;
