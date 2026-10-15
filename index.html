@@ -2228,6 +2228,7 @@ let checkinWatchId = null, checkinLastPosition = null, checkinGeoErrorShown = fa
 let checkinDeadline = 0;
 const PHONE_RE = /^\+?\d{7,15}$/;
 const POS_FRESH_MS = 5 * 60 * 1000;
+const COARSE_M = 1000; // worse than this usually means Precise Location is off
 let lastPosition = null, idleWatchId = null, pendingSmsUri = null, sosFiredThisHold = false, sendPanelReturnFocus = null;
 const CHECKIN_CIRCUMFERENCE = 2 * Math.PI * 88;
 
@@ -2272,13 +2273,16 @@ function formatLocationUrl(pos) {
 //  LOCATION CACHE — SOS never waits on GPS
 // ═══════════════════════════════════════════════════════════
 function cleanPhone(p) { return String(p).replace(/[\s\-\(\)\.]/g, ''); }
-function rememberPosition(pos) { if (!lastPosition || pos.timestamp >= lastPosition.timestamp) { lastPosition = pos; if (typeof renderReadiness === 'function') renderReadiness(); } }
+// ponytail: assumes walking speed (1.5 m/s) to age a fix; a car would need more.
+function posError(p) { return (p.coords.accuracy || 9999) + Math.max(0, Date.now() - p.timestamp) / 1000 * 1.5; }
+// Keep whichever fix is likely closer to where she is now, so a coarse Wi-Fi fix never replaces a good GPS one.
+function rememberPosition(pos) { if (!lastPosition || posError(pos) <= posError(lastPosition)) { lastPosition = pos; if (typeof renderReadiness === 'function') renderReadiness(); } }
 function freshPosition() { return lastPosition && Date.now() - lastPosition.timestamp < POS_FRESH_MS ? lastPosition : null; }
 // Only runs once location is already granted, so it never pops a prompt by itself.
 function startIdleWatch() {
   if (typeof decoyActive !== 'undefined' && decoyActive) return; // a notes app doesn't use location
   if (idleWatchId !== null || !navigator.geolocation || document.visibilityState !== 'visible') return;
-  idleWatchId = navigator.geolocation.watchPosition(rememberPosition, () => {}, { enableHighAccuracy: false, maximumAge: 60000, timeout: 30000 });
+  idleWatchId = navigator.geolocation.watchPosition(rememberPosition, () => {}, { enableHighAccuracy: true, maximumAge: 60000, timeout: 30000 });
 }
 function stopIdleWatch() { if (idleWatchId !== null) { navigator.geolocation.clearWatch(idleWatchId); idleWatchId = null; } }
 function syncIdleWatch() {
@@ -2301,7 +2305,8 @@ function setChip(id, textId, state, text) {
 function renderReadiness() {
   const pos = freshPosition();
   let locOk = false;
-  if (pos) { locOk = true; setChip('readyLoc', 'readyLocText', 'ok', `Location ±${Math.max(1, Math.round(pos.coords.accuracy || 0))} m`); }
+  if (pos && pos.coords.accuracy > COARSE_M) { locOk = true; setChip('readyLoc', 'readyLocText', 'warn', 'Location approximate'); }
+  else if (pos) { locOk = true; setChip('readyLoc', 'readyLocText', 'ok', `Location ±${Math.max(1, Math.round(pos.coords.accuracy || 0))} m`); }
   else if (geoPermState === 'denied') setChip('readyLoc', 'readyLocText', 'warn', 'Location blocked');
   else if (geoPermState === 'granted') setChip('readyLoc', 'readyLocText', '', 'Finding location…');
   else setChip('readyLoc', 'readyLocText', 'warn', 'Location off');
@@ -2314,7 +2319,9 @@ function renderReadiness() {
   if (sub && document.getElementById('statusText').textContent === 'All clear') sub.textContent = (locOk && phones.length) ? 'Ready if you need it' : 'Finish setup below';
 }
 function readyLocTap() {
-  if (freshPosition()) { shareLocation(); return; }
+  const fresh = freshPosition();
+  if (fresh && fresh.coords.accuracy > COARSE_M) { showToast('Your location is only accurate to about ' + (fresh.coords.accuracy / 1000).toFixed(1) + ' km. On iPhone: Settings > Privacy & Security > Location Services > Safari Websites > Precise Location on.', 9000); return; }
+  if (fresh) { shareLocation(); return; }
   if (geoPermState === 'denied') { showToast('Location is blocked. Turn it on for this site in your browser settings.', 5000); return; }
   if (!navigator.geolocation) { showToast('Location not available'); return; }
   navigator.geolocation.getCurrentPosition(p => { rememberPosition(p); syncIdleWatch(); }, handleGeoError, { enableHighAccuracy: true, timeout: 15000 });
@@ -2539,14 +2546,16 @@ function showNoContactsPanel(kicker) {
   showSendPanelEl();
 }
 // A location fix arrived after the panel opened without one: put it in the text.
-function addLocationToPanel(body) {
+function addLocationToPanel(body, sharper) {
   const panel = document.getElementById('sendPanel');
   if (!panel.classList.contains('show')) return;
   const phones = alertPhones(); if (!phones.length) return;
   const uri = smsUri(phones, body);
   document.getElementById('sendPreview').textContent = body;
   document.getElementById('sendSmsBtn').href = uri;
-  document.getElementById('sendLoc').classList.add('show');
+  const loc = document.getElementById('sendLoc');
+  loc.textContent = sharper ? "Found a more exact location. It's in the text now." : "Location found. It's in the text now.";
+  loc.classList.add('show');
   pendingSmsUri = null;
 }
 function closeSendPanel() {
@@ -2714,9 +2723,16 @@ function sosTrigger() {
   // Keep tracking for a few minutes; if the first text had no location, add it the moment a fix arrives.
   if (sosWatchId !== null) { navigator.geolocation.clearWatch(sosWatchId); sosWatchId = null; }
   if (navigator.geolocation) {
-    let upgraded = !!pos;
+    let sentAcc = pos ? pos.coords.accuracy : Infinity;
     sosWatchId = navigator.geolocation.watchPosition(
-      p => { rememberPosition(p); if (!upgraded) { upgraded = true; addLocationToPanel(`SOS! I need help. My location: ${formatLocationUrl(p)}`); } },
+      p => {
+        rememberPosition(p);
+        // Swap in a fix that's clearly sharper than the one in the text (first fix, or GPS settling after Wi-Fi).
+        if (p.coords.accuracy < sentAcc / 2 && sentAcc - p.coords.accuracy > 20) {
+          addLocationToPanel(`SOS! I need help. My location: ${formatLocationUrl(p)}`, sentAcc !== Infinity);
+          sentAcc = p.coords.accuracy;
+        }
+      },
       err => { if (err.code === 1 && !pos) showToast('Location is off, so the SOS text has no location.', 5000); },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
     );
@@ -2802,7 +2818,7 @@ function startCheckin(resumeSeconds) {
   if (navigator.geolocation) {
     if (checkinWatchId !== null) navigator.geolocation.clearWatch(checkinWatchId);
     checkinWatchId = navigator.geolocation.watchPosition(
-      pos => { checkinLastPosition = pos; rememberPosition(pos); },
+      pos => { if (!checkinLastPosition || posError(pos) <= posError(checkinLastPosition)) checkinLastPosition = pos; rememberPosition(pos); },
       err => {
         if (!checkinGeoErrorShown) {
           checkinGeoErrorShown = true;
